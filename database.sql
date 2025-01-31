@@ -18,7 +18,6 @@ CREATE TABLE "user" (
 
 
 -------------------------------------------------------
---------------------------------------------------
 -- SEED DATA:
 --   You'll need to actually register users via the application in order to get hashed
 --   passwords. Once you've done that, you can modify this INSERT statement to include
