@@ -3,6 +3,7 @@
 -- START FROM SCRATCH:
 DROP TRIGGER IF EXISTS "on_user_update" ON "user";
 DROP TABLE IF EXISTS "user";
+DROP TABLE IF EXISTS "guest_user";
 
 
 -------------------------------------------------------
@@ -14,6 +15,13 @@ CREATE TABLE "user" (
   "password" VARCHAR (1000) NOT NULL,
   "inserted_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
   "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE "guest_user" (
+  "id" SERIAL PRIMARY KEY,
+  "username" VARCHAR (80) NOT NULL,
+  "inserted_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT unique_guest_username UNIQUE ("username")
 );
 
 
@@ -56,3 +64,9 @@ CREATE TRIGGER on_user_update
 BEFORE UPDATE ON "user"
 FOR EACH ROW
 EXECUTE PROCEDURE set_updated_at_to_now();
+
+CREATE TRIGGER on_guest_user_update
+BEFORE UPDATE ON "guest_user"
+FOR EACH ROW
+EXECUTE PROCEDURE set_updated_at_to_now();
+

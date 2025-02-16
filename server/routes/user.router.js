@@ -2,6 +2,7 @@ const express = require('express');
 const encryptLib = require('../modules/encryption');
 const pool = require('../modules/pool');
 const userStrategy = require('../strategies/user.strategy');
+const crypto = require('crypto');
 
 
 const router = express.Router();
@@ -51,12 +52,46 @@ router.post('/login', userStrategy.authenticate('local'), (req, res) => {
   res.sendStatus(200);
 });
 
+router.post('/guest', async (req, res) => {
+  const animals = ['panda', 'monkey', 'tiger', 'elephant', 'giraffe', 'penguin', 'koala', 'zebra'];
+  let guestUser = null;
+
+  while (!guestUser) {
+    try {
+      const animal = animals[Math.floor(Math.random() * animals.length)];
+      const number = Math.floor(Math.random() * 900000) + 100000;
+      const username = `${animal}${number}`;
+
+      const result = await pool.query(
+        'INSERT INTO "guest_user" ("username") VALUES ($1) RETURNING *',
+        [username]
+      );
+      guestUser = result.rows[0];
+    } catch (error) {
+      if (error.code !== '23505') { // If error is not a duplicate key error
+        console.error('Guest login error:', error);
+        return res.sendStatus(500);
+      }
+      // If duplicate username, loop will continue and try again
+    }
+  }
+
+  // Auto-login the guest user after creation
+  req.login(guestUser, (err) => {
+    if (err) {
+      console.error('Error logging in guest:', err);
+      return res.sendStatus(500);
+    }
+    res.send(guestUser);
+  });
+});
+
 // Clear all server session information about this user:
 router.post('/logout', (req, res, next) => {
   // Use passport's built-in method to log out the user.
   req.logout((err) => {
-    if (err) { 
-      return next(err); 
+    if (err) {
+      return next(err);
     }
     res.sendStatus(200);
   });

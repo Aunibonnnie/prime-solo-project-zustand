@@ -9,33 +9,21 @@ passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 
-// Deserializing the user essentially means "looking up who you are"
-// based on the user ID that's stored in the active session that
-// corresponds to the cookie that came along with the request.
-// This Passport method does the work of:
-//   * Getting that user's info out of the "user" table.
-//   * Attaching the user's info to the request as `req.user`.
-// There are great answers to this Stack Overflow question, if you'd like
-// more details about serializeUser and deserializeUser:
-//   * https://stackoverflow.com/questions/27637609/understanding-passport-serialize-deserialize
 passport.deserializeUser((id, done) => {
-  const sqlText = `
-    SELECT * FROM "user"
-      WHERE "id" = $1;
-  `;
-  const sqlValues = [id];
-
-  pool.query(sqlText, sqlValues)
+  // First try regular user table
+  pool.query('SELECT * FROM "user" WHERE "id" = $1', [id])
     .then((dbRes) => {
       const user = dbRes && dbRes.rows && dbRes.rows[0];
       if (user) {
-        // Remove the password property from the user object:
         delete user.password;
-        // Attach the user object to the request as `req.user`:
         done(null, user);
       } else {
-        // If no user was found, call `done` with no user object:
-        done(null, null);
+        // If not found, try guest table
+        pool.query('SELECT * FROM "guest_user" WHERE "id" = $1', [id])
+          .then((guestRes) => {
+            done(null, guestRes.rows[0]);
+          })
+          .catch((err) => done(err));
       }
     })
     .catch((dbErr) => {
@@ -61,7 +49,7 @@ passport.use(
     pool.query(sqlText, sqlValues)
       .then((dbRes) => {
         const user = dbRes && dbRes.rows && dbRes.rows[0];
-        
+
         if (user && encryptLib.comparePassword(password, user.password)) {
           // The request body's password has been hashed and matches the stored
           // hashed password. AKA: Login was successful! Now, we use Passport's
@@ -91,3 +79,4 @@ passport.use(
 
 
 module.exports = passport;
+

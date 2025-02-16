@@ -50,7 +50,18 @@ const createUserSlice = (set, get) => ({
       }
     }
   },
-  logOut : async () => {
+  guestLogin: async () => {
+    get().setAuthErrorMessage('');
+    try {
+      const { data } = await axios.post('/api/user/guest');
+      set({ user: data }); // The server now sends back the logged-in guest user
+    } catch (err) {
+      console.log('guestLogin error:', err);
+      get().setAuthErrorMessage('Guest login failed. Please try again.');
+    }
+  },
+
+  logOut: async () => {
     // Logs out the current user by sending a POST request to
     // /api/user/logout, and then clears their data.
     try {
