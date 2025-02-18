@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { XCircle } from 'phosphor-react'; // Importing the XCircle icon
 import './ColorGamePage.css';
 
 function ColorGamePage() {
-  const [timeLeft, setTimeLeft] = useState(30); // 2 minutes = 120 seconds
+  const [timeLeft, setTimeLeft] = useState(1130); // 2 minutes = 120 seconds
   const [level, setLevel] = useState(1);
   const [score, setScore] = useState(0);
   const [selectedColor, setSelectedColor] = useState('');
@@ -157,9 +158,12 @@ function ColorGamePage() {
         <div className="instructions-modal">
           <div className="modal-content">
             <h3>How to Play</h3>
-            <p>Click on the blocks to match the selected color. Correct clicks will increase your score and move you to the next level!</p>
+            <p>Match the color to the given text.</p> 
+            <p>Example: Match The color BLUE</p>
             <img src="https://via.placeholder.com/150" alt="Game Example" />
-            <button className="close-btn" onClick={closeInstructions}>X</button>
+            <button className="close-btn" onClick={closeInstructions}>
+              <XCircle size={32} /> {/* Phosphor's XCircle icon */}
+            </button>
           </div>
         </div>
       )}
@@ -167,8 +171,7 @@ function ColorGamePage() {
       <p>Time Left: {timeLeft} seconds</p>
       <p>Level: {level}</p>
       <p>Score: {score}</p>
-      <h3>Match the color: {selectedColor}</h3>
-      <span className="instructions-icon" onClick={openInstructions}>❗</span> {/* The '!' icon */}
+      <h3>Match the color: {selectedColor} <span className="instructions-icon" onClick={openInstructions}>❗</span> {/* The '!' icon */}</h3>
       <br />
       <span
         className="selected-color"
@@ -194,6 +197,8 @@ function ColorGamePage() {
 }
 
 export default ColorGamePage;
+
+
 
 
 

@@ -2,6 +2,7 @@ import useStore from '../../zustand/store'
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import './AccountPage.css'; // Import the CSS file
 
 function AccountPage () {
   const [newUsername, setNewUsername] = useState('');
@@ -17,7 +18,6 @@ function AccountPage () {
   useEffect(() => {
     fetchUser();
   }, [fetchUser]);
-
 
   const handleLogout = async () => {
     try {
@@ -44,10 +44,6 @@ function AccountPage () {
       console.error('Error disabling account:', err.message || err);
     }
   };
-  
-  
-  
-  
 
   const handleChangeUsername = async (e) => {
     e.preventDefault();
@@ -68,60 +64,54 @@ function AccountPage () {
   };
 
   return (
-    <>
-    <h2>AccountPage</h2>
-    <div>
-    <button onClick={handleLogout}>
-        Log Out
-      </button>
-      <h1>Welcome, {user ? user.username : 'Guest'}</h1>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <button onClick={handleDisableAccount}>Disable Account</button>
-    </div>
-
-
-<div className="p-4 border rounded-lg shadow-md max-w-md mx-auto">
-<h2 className="text-2xl font-bold mb-4">Account Details</h2>
-<p className="text-lg mb-2"><strong>Username:</strong> {user.username}</p>
-<p className="text-lg mb-4"><strong>Status:</strong> {user.status ? 'Active' : 'Inactive'}</p>
-
-{!showInput ? (
-  <button
-    onClick={() => setShowInput(true)}
-    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
-  >
-    Change Username
-  </button>
-) : (
-  <form onSubmit={handleChangeUsername} className="mt-4">
-    <input
-      type="text"
-      value={newUsername}
-      onChange={(e) => setNewUsername(e.target.value)}
-      placeholder="Enter new username"
-      className="border p-2 rounded w-full mb-2"
-    />
-    <div className="flex gap-2">
+    <div className="account-container">
+      <h2 className="account-header">AccountPage</h2>
+      <p className="username-info">
+        Welcome <strong>Username:</strong> {user ? user.username : 'Guest'}
+        <strong> Status:</strong> {user.status ? 'Active' : 'Inactive'}
+      </p>
+    <div className="change-username-container">
+    {!showInput ? (
       <button
-        type="submit"
-        className="bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 transition"
+        onClick={() => setShowInput(true)}
+        className="change-username-btn"
       >
-        Save
+        Change Username
       </button>
-      <button
-        type="button"
-        onClick={() => setShowInput(false)}
-        className="bg-gray-400 text-white px-3 py-2 rounded hover:bg-gray-500 transition"
-      >
-        Cancel
-      </button>
+    ) : (
+      <form onSubmit={handleChangeUsername} className="change-username-form">
+        <input
+          type="text"
+          value={newUsername}
+          onChange={(e) => setNewUsername(e.target.value)}
+          placeholder="Enter new username"
+          className="change-username-input"
+        />
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            className="save-btn"
+          >
+            Save
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowInput(false)}
+            className="cancel-btn"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    )}
+      <div className="account-actions">
+        <button className="logout-btn" onClick={handleLogout}>Log Out</button>
+        {error && <p className="error-message">{error}</p>}
+        <button className="disable-btn" onClick={handleDisableAccount}>Disable Account</button>
+      </div>
+        {message && <p className="message">{message}</p>}
+      </div>
     </div>
-  </form>
-)}
-
-{message && <p className="mt-2 text-sm text-red-500">{message}</p>}
-</div>
-</>
   );
 }
 
