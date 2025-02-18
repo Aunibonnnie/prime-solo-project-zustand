@@ -10,7 +10,8 @@ function ColorGamePage() {
   const [message, setMessage] = useState('');
   const [mistakenColor, setMistakenColor] = useState(null); // Store mistaken color
   const [showModal, setShowModal] = useState(false); // Show or hide the pop-up modal
-  
+  const [showInstructions, setShowInstructions] = useState(false); // Show tutorial instructions
+
   const baseColors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan', 'brown', 'gray'];
 
   const calculateBlocks = (level) => {
@@ -121,6 +122,14 @@ function ColorGamePage() {
     shuffleColors();
   };
 
+  const closeInstructions = () => {
+    setShowInstructions(false);
+  };
+
+  const openInstructions = () => {
+    setShowInstructions(true);
+  };
+
   if (gameOver) {
     return (
       <div className="game-over-container">
@@ -144,11 +153,22 @@ function ColorGamePage() {
 
   return (
     <div className="game-container">
+      {showInstructions && (
+        <div className="instructions-modal">
+          <div className="modal-content">
+            <h3>How to Play</h3>
+            <p>Click on the blocks to match the selected color. Correct clicks will increase your score and move you to the next level!</p>
+            <img src="https://via.placeholder.com/150" alt="Game Example" />
+            <button className="close-btn" onClick={closeInstructions}>X</button>
+          </div>
+        </div>
+      )}
       <h2>Color Game</h2>
       <p>Time Left: {timeLeft} seconds</p>
       <p>Level: {level}</p>
       <p>Score: {score}</p>
       <h3>Match the color: {selectedColor}</h3>
+      <span className="instructions-icon" onClick={openInstructions}>❗</span> {/* The '!' icon */}
       <br />
       <span
         className="selected-color"
@@ -174,6 +194,7 @@ function ColorGamePage() {
 }
 
 export default ColorGamePage;
+
 
 
 
