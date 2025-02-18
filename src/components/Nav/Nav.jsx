@@ -26,7 +26,11 @@ function Nav() {
             <li>
               <NavLink to="/">Home</NavLink>
             </li>
+            <li>
+              <NavLink to="/account">Account</NavLink>
+            </li>
           </>
+          
         )
       }
       {/* Show these links regardless of auth status: */}

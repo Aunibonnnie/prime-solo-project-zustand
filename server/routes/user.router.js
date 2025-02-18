@@ -43,14 +43,86 @@ router.post('/register', (req, res, next) => {
     });
 });
 
+//////////////////////////////////////////
+// Update Username
+router.put('/change-username', async (req, res) => {
+  const { userId, newUsername } = req.body;
+
+  try {
+    const result = await pool.query(
+      `UPDATE "user" 
+       SET username = $1, updated_at = NOW() 
+       WHERE id = $2 
+       RETURNING username`,
+      [newUsername, userId]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ message: 'Username updated', username: result.rows[0].username });
+  } catch (error) {
+    if (error.code === '23505') {
+      return res.status(400).json({ message: 'Username already taken' });
+    }
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+//////////////////////////////////////////
+////////
+// user.router.js
+// Route for disabling a user account
+router.post('/disable', (req, res) => {
+  const { userId } = req.body; // Get userId from the request body
+  console.log('Disabling account for user ID:', userId);
+
+  // SQL query to disable the user account
+  const sqlText = `
+  UPDATE "user"
+  SET "status" = FALSE, "account_status" = FALSE, "updated_at" = now()
+  WHERE "id" = $1
+  RETURNING *;
+`;
+  const sqlValues = [userId];  // Use the userId from the request body
+
+  pool.query(sqlText, sqlValues)
+    .then((dbRes) => {
+      if (dbRes.rows.length > 0) {
+        console.log('User disabled successfully:', dbRes.rows[0]);
+        res.status(200).send({ message: 'Account disabled successfully' });
+      } else {
+        console.log('No rows updated. User might not exist or already disabled.');
+        res.status(404).send({ message: 'User not found or already disabled' });
+      }
+    })
+    .catch((err) => {
+      console.error('Error disabling account:', err);
+      res.status(500).send({ error: 'Failed to disable account' });
+    });
+});
+////////
+
 // Handles the logic for logging in a user. When this route receives
 // a request, it runs a middleware function that leverages the Passport
 // library to instantiate a session if the request body's username and
 // password are correct.
-  // You can find this middleware function in /server/strategies/user.strategy.js.
-router.post('/login', userStrategy.authenticate('local'), (req, res) => {
-  res.sendStatus(200);
-});
+// You can find this middleware function in /server/strategies/user.strategy.js.
+  router.post('/login', userStrategy.authenticate('local'), async (req, res) => {
+    try {
+      const userId = req.user?.id;
+  
+      if (userId) {
+        await pool.query(`UPDATE "user" SET status = TRUE WHERE id = $1`, [userId]);
+        console.log(`User ${userId} status set to active`);
+      }
+  
+      res.sendStatus(200);
+    } catch (error) {
+      console.error('Error updating user status during login:', error);
+      res.status(500).json({ error: 'Login failed' });
+    }
+  });
 
 router.post('/guest', async (req, res) => {
   const animals = ['panda', 'monkey', 'tiger', 'elephant', 'giraffe', 'penguin', 'koala', 'zebra'];
@@ -86,16 +158,28 @@ router.post('/guest', async (req, res) => {
   });
 });
 
-// Clear all server session information about this user:
-router.post('/logout', (req, res, next) => {
-  // Use passport's built-in method to log out the user.
-  req.logout((err) => {
-    if (err) {
-      return next(err);
-    }
-    res.sendStatus(200);
-  });
-});
+router.post('/logout', async (req, res) => {
+  try {
+    const userId = req.user?.id; // Get logged-in user ID
 
+    if (!userId) {
+      return res.status(401).json({ error: 'No user logged in' });
+    }
+
+    // Update user status to inactive in SQL database
+    await pool.query(`UPDATE "user" SET status = FALSE WHERE id = $1`, [userId]);
+    console.log(`User ${userId} status set to inactive`);
+
+    // Log out and clear session
+    req.logout(() => {
+      console.log(`User ${userId} logged out`);
+      res.sendStatus(200);
+    });
+
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ error: 'Failed to log out' });
+  }
+});
 
 module.exports = router;

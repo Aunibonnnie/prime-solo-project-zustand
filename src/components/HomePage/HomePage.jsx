@@ -3,7 +3,6 @@ import useStore from '../../zustand/store'
 
 function HomePage() {
   const user = useStore((state) => state.user);
-  const logOut = useStore((state) => state.logOut);
 
   return (
     <>
@@ -12,9 +11,8 @@ function HomePage() {
       <p>Your username is: {user.username}</p>
       <p>Your ID is: {user.id}</p>
       <p>{JSON.stringify( user )}</p>
-      <button onClick={logOut}>
-        Log Out
-      </button>
+      <h3>ColorPage</h3>
+      <h3>ShapePage</h3>
     </>
   );
 }

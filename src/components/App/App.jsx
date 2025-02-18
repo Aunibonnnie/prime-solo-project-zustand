@@ -10,7 +10,7 @@ import Nav from '../Nav/Nav';
 import HomePage from '../HomePage/HomePage';
 import LoginPage from '../LoginPage/LoginPage';
 import RegisterPage from '../RegisterPage/RegisterPage';
-
+import AccountPage from '../AccountPages/AccountPage';
 
 function App() {
   const user = useStore((state) => state.user);
@@ -48,6 +48,11 @@ function App() {
               )
             }
           />
+
+<Route 
+  path="/account"
+  element={user ? <AccountPage /> : <Navigate to="/login" replace />} 
+/>
           <Route 
             exact path="/registration"
             element={
@@ -58,6 +63,7 @@ function App() {
               )
             }
           />
+          <Route path="/account" element={<AccountPage />} />
           <Route 
             exact path="/about"
             element={

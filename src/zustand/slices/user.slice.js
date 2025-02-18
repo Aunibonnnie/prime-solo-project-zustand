@@ -61,6 +61,31 @@ const createUserSlice = (set, get) => ({
     }
   },
 
+// user.slice.js (Zustand Store)
+  // Function to disable user account
+  disableUserAccount: async (userId) => {
+    try {
+      console.log('Disabling user with ID:', userId);  // Debug log to check if function is called
+      const response = await axios.post('/api/user/disable', { userId });
+      
+      if (response.status === 200) {
+        set((state) => ({
+          user: {
+            ...state.user,
+            status: false,  // Update status to 'disabled' in the store
+          },
+        }));
+        return response.data;  // Return response or data as needed
+      } else {
+        throw new Error('Failed to disable account');
+      }
+    } catch (err) {
+      console.error('Error in disableUserAccount:', err);
+      set({ error: err.message });
+      throw err;
+    }
+  },
+
   logOut: async () => {
     // Logs out the current user by sending a POST request to
     // /api/user/logout, and then clears their data.
