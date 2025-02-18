@@ -1,0 +1,57 @@
+.game-container {
+  text-align: center;
+}
+
+.game-over-container {
+  text-align: center;
+}
+
+.selected-color, .mistaken-color, .correct-color {
+  display: inline-block;
+  width: 100px;
+  height: 100px;
+  margin-left: 10px;
+  border-radius: 12px;
+}
+
+.selected-color {
+  border: 4px solid black;  /* Black border */
+  background-color: var(--selected-color);  /* Dynamically applied background color */
+  border-color: var(--selected-color);  /* Dynamically applied border color */
+}
+
+.color-block-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.color-block {
+  width: 100px;
+  height: 100px;
+  margin: 10px;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: transform 0.2s;
+}
+
+.color-block:hover {
+  transform: scale(1.1);
+}
+
+.modal {
+  text-align: center;
+}
+
+button {
+  width: 150px;
+  height: 50px;
+  padding: 10px 20px;
+  font-size: 18px;
+  margin-top: 20px;
+  cursor: pointer;
+  border-radius: 5px;  /* Set border radius to 10% */
+  background-color: rgb(19, 173, 19);  /* Set background color to green */
+  color: white;  /* Set text color to white */
+  border: none;  /* Remove default border */
+}

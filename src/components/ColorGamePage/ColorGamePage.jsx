@@ -1,36 +1,74 @@
-import useStore from '../../zustand/store'
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import './ColorGamePage.css';
 
 function ColorGamePage() {
-  const user = useStore((state) => state.user);
-  const [timeLeft, setTimeLeft] = useState(120); // 2 minutes = 120 seconds
+  const [timeLeft, setTimeLeft] = useState(30); // 2 minutes = 120 seconds
   const [level, setLevel] = useState(1);
   const [score, setScore] = useState(0);
   const [selectedColor, setSelectedColor] = useState('');
   const [gameOver, setGameOver] = useState(false);
   const [message, setMessage] = useState('');
+  const [mistakenColor, setMistakenColor] = useState(null); // Store mistaken color
+  const [showModal, setShowModal] = useState(false); // Show or hide the pop-up modal
+  
+  const baseColors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan', 'brown', 'gray'];
 
-  const allColors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+  const calculateBlocks = (level) => {
+    let blockCount = 3; // Default to 3 blocks for levels 1-5
+    
+    if (level >= 6 && level <= 10) {
+      blockCount = 5; // Levels 6-10: 5 blocks
+    } else if (level >= 11 && level <= 15) {
+      blockCount = 8; // Levels 11-15: 8 blocks
+    } else if (level >= 16 && level <= 20) {
+      blockCount = 12; // Levels 16-20: 12 blocks
+    } else if (level >= 21) {
+      blockCount = 20; // Levels 21 and above: 20 blocks
+    }
+
+    return blockCount;
+  };
+
   const [shuffledColors, setShuffledColors] = useState([]);
+  const [targetColorCount, setTargetColorCount] = useState(0); // Track how many target color blocks there are
 
-  // Shuffle colors only when the level changes
   const shuffleColors = () => {
-    const shuffled = [...allColors].sort(() => Math.random() - 0.5);
+    const blockCount = calculateBlocks(level);  // Get the number of blocks for the current level
+
+    let shuffled = [];
+    
+    // Create shuffled array by picking colors from baseColors
+    for (let i = 0; i < blockCount; i++) {
+      const randomColor = baseColors[Math.floor(Math.random() * baseColors.length)];
+      shuffled.push(randomColor);
+    }
+
+    const randomColor = shuffled[Math.floor(Math.random() * shuffled.length)];
+    setSelectedColor(randomColor);
+
+    const targetColorBlocks = Math.floor(Math.random() * 3) + 1; // Random number between 1 and 3 blocks of target color
+    setTargetColorCount(targetColorBlocks);
+
+    while (shuffled.filter(color => color === randomColor).length < targetColorBlocks) {
+      const randomIndex = Math.floor(Math.random() * shuffled.length);
+      shuffled[randomIndex] = randomColor;
+    }
+
+    shuffled = shuffled.sort(() => Math.random() - 0.5);
+    
+    shuffled = shuffled.map(color => ({
+      color,
+      clicked: false,
+    }));
+
     setShuffledColors(shuffled);
   };
 
-  // Start Game or Next Level Setup
   useEffect(() => {
     if (gameOver) return;
 
-    // Pick a random color for the user to match
-    const randomColor = allColors[Math.floor(Math.random() * allColors.length)];
-    setSelectedColor(randomColor);
-
-    // Shuffle colors for the new level
     shuffleColors();
 
-    // Start Countdown Timer
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -43,75 +81,113 @@ function ColorGamePage() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [level, gameOver, setTimeLeft, setSelectedColor, setGameOver, setMessage]);
+  }, [level, gameOver]);
 
-  const handleColorClick = (color) => {
+  const handleColorClick = (index) => {
     if (gameOver) return;
 
-    if (color === selectedColor) {
-      setScore(score + 1);
-      setLevel(level + 1);
-      setTimeLeft(timeLeft + 10); // Gain extra time
-      setMessage('Correct! Next level...');
-    } else {
+    const clickedBlock = shuffledColors[index];
+    if (clickedBlock.color === selectedColor && !clickedBlock.clicked) {
+      const updatedColors = [...shuffledColors];
+      updatedColors[index] = { ...clickedBlock, clicked: true };
+      setShuffledColors(updatedColors);
+
+      const remainingUnclickedTargetBlocks = updatedColors.filter(
+        (block) => block.color === selectedColor && !block.clicked
+      );
+
+      if (remainingUnclickedTargetBlocks.length === 0) {
+        setScore(score + 1);
+        setLevel(level + 1);
+        setTimeLeft(timeLeft + 5);
+        setMessage('Correct! Next level...');
+        shuffleColors();
+      }
+    } else if (clickedBlock.color !== selectedColor) {
+      setMistakenColor(clickedBlock.color); // Store the mistaken color
       setGameOver(true);
       setMessage('Oopsie! Wrong color. Game Over!');
+      setShowModal(true); // Show the pop-up modal
     }
   };
 
   const restartGame = () => {
-    setTimeLeft(120);
+    setTimeLeft(30);
     setLevel(1);
     setScore(0);
     setGameOver(false);
     setMessage('');
+    setShowModal(false); // Hide the modal
     shuffleColors();
   };
 
   if (gameOver) {
     return (
-      <div className="text-center">
+      <div className="game-over-container">
         <h2>Game Over</h2>
         <p>{message}</p>
         <p>Your final score: {score}</p>
-        <button onClick={restartGame}>Restart Game</button>
+        {showModal && (
+          <div className="modal">
+            <h3>Oops! Try Again!</h3>
+            <p>Incorrect color clicked:</p>  
+            <span className="mistaken-color" style={{ backgroundColor: mistakenColor }}></span>
+            <p>Correct color to match:</p> 
+            <span className="correct-color" style={{ backgroundColor: selectedColor }}></span>
+            <br />
+            <button onClick={restartGame}>Restart Game</button>
+          </div>
+        )}
       </div>
     );
   }
 
   return (
-    <>
-    <h2>Color Game</h2>
     <div className="game-container">
       <h2>Color Game</h2>
       <p>Time Left: {timeLeft} seconds</p>
       <p>Level: {level}</p>
       <p>Score: {score}</p>
       <h3>Match the color: {selectedColor}</h3>
-      <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap' }}>
-        {shuffledColors.map((color) => (
-          <div
-            key={color}
-            onClick={() => handleColorClick(color)}
-            style={{
-              width: '100px',
-              height: '100px',
-              margin: '10px',
-              backgroundColor: color,
-              cursor: 'pointer',
-              borderRadius: '12px',
-              transition: 'transform 0.2s',
-            }}
-            onMouseOver={(e) => (e.target.style.transform = 'scale(1.1)')}
-            onMouseOut={(e) => (e.target.style.transform = 'scale(1)')}
-          ></div>
+      <br />
+      <span
+        className="selected-color"
+        style={{
+          '--selected-color': selectedColor, // Set the selectedColor dynamically in the CSS variable
+        }}
+      ></span>
+      <div className="color-block-container">
+        {shuffledColors.map((block, index) => (
+          !block.clicked && ( 
+            <div
+              key={index}
+              onClick={() => handleColorClick(index)}
+              className="color-block"
+              style={{ backgroundColor: block.color }}
+            ></div>
+          )
         ))}
       </div>
       <p>{message}</p>
     </div>
-    </>
   );
 }
 
-
 export default ColorGamePage;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
