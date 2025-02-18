@@ -11,6 +11,9 @@ import HomePage from '../HomePage/HomePage';
 import LoginPage from '../LoginPage/LoginPage';
 import RegisterPage from '../RegisterPage/RegisterPage';
 import AccountPage from '../AccountPages/AccountPage';
+import ColorGamePage from '../ColorGamePage/ColorGamePage';
+import ShapeGamePage from '../ShapeGamePage/ShapeGamePage';
+import LeaderboardPage from '../LeaderboardPage/LeaderboardPage';
 
 function App() {
   const user = useStore((state) => state.user);
@@ -48,7 +51,10 @@ function App() {
               )
             }
           />
-
+        <Route path="/" element={<HomePage />} />  {/* Correct JSX syntax */}
+        <Route path="/color-game" element={<ColorGamePage />} />  {/* Correct JSX syntax */}
+        <Route path="/shape-game" element={<ShapeGamePage />} />  {/* Correct JSX syntax */}
+        <Route path="/leadorboard" element={<LeaderboardPage />} />  {/* Correct JSX syntax */}
 <Route 
   path="/account"
   element={user ? <AccountPage /> : <Navigate to="/login" replace />} 

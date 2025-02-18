@@ -66,3 +66,123 @@ typings/
 
 # ignore package-lock as it complicates merging
 package-lock.json
+
+if you want to make a game that is all random
+# import useStore from '../../zustand/store'
+# import { useState, useEffect } from 'react';
+
+# function ColorGamePage() {
+#   const user = useStore((state) => state.user);
+#   const [timeLeft, setTimeLeft] = useState(120); // 2 minutes = 120 seconds
+#   const [level, setLevel] = useState(1);
+#   const [score, setScore] = useState(0);
+#   const [selectedColor, setSelectedColor] = useState('');
+#   const [gameOver, setGameOver] = useState(false);
+#   const [message, setMessage] = useState('');
+
+# // List of colors for the game
+# const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+#  // Shuffle colors array for randomized order
+#  const shuffleColors = (arr) => {
+#   return arr.sort(() => Math.random() - 0.5);
+# };
+
+# useEffect(() => {
+#   if (gameOver) return;
+
+#   // Select a random color to match
+#   const randomColor = colors[Math.floor(Math.random() * colors.length)];
+#   setSelectedColor(randomColor);
+
+#   // Start Countdown Timer
+#   const timer = setInterval(() => {
+#     setTimeLeft((prev) => {
+#       if (prev <= 1) {
+#         clearInterval(timer);
+#         setGameOver(true);
+#         setMessage('Time is up! Game Over!');
+#       }
+#       return prev - 1;
+#     });
+#   }, 1000);
+
+#   return () => clearInterval(timer);
+# }, [level, gameOver, setTimeLeft, setSelectedColor, setGameOver, setMessage]);
+
+# const handleColorClick = (color) => {
+#   if (gameOver) return;
+
+#   if (color === selectedColor) {
+#     setScore(score + 1);
+#     setLevel(level + 1);
+#     setTimeLeft(timeLeft + 10); // Add extra time
+#     setMessage('Correct! Next level...');
+#   } else {
+#     setGameOver(true);
+#     setMessage('Oopsie! Wrong color. Game Over!');
+#   }
+# };
+
+# const restartGame = () => {
+#   setTimeLeft(120);
+#   setLevel(1);
+#   setScore(0);
+#   setGameOver(false);
+#   setMessage('');
+# };
+
+# if (gameOver) {
+#   return (
+#     <div>
+#       <h2>Game Over</h2>
+#       <p>{message}</p>
+#       <p>Your final score: {score}</p>
+#       <button onClick={restartGame}>Restart Game</button>
+#     </div>
+#   );
+# }
+
+#   if (gameOver) {
+#     return (
+#       <div>
+#         <h2>Game Over</h2>
+#         <p>{message}</p>
+#         <p>Your final score: {score}</p>
+#         <button onClick={restartGame}>Restart Game</button>
+#       </div>
+#     );
+#   }
+
+#   return (
+#     <>
+#     <h2>Color Game</h2>
+#       <p>Time Left: {timeLeft} seconds</p>
+#       <p>Level: {level}</p>
+#       <p>Score: {score}</p>
+#       <h3>Match the color: {selectedColor}</h3>
+#       <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap' }}>
+#         {shuffleColors(colors).map((color) => (
+#           <div
+#             key={color}
+#             onClick={() => handleColorClick(color)}
+#             style={{
+#               width: '100px',
+#               height: '100px',
+#               margin: '10px',
+#               backgroundColor: color,
+#               cursor: 'pointer',
+#               borderRadius: '12px',
+#               transition: 'transform 0.2s',
+#             }}
+#             onMouseOver={(e) => (e.target.style.transform = 'scale(1.1)')}
+#             onMouseOut={(e) => (e.target.style.transform = 'scale(1)')}
+#           ></div>
+#         ))}
+#       </div>
+#       <p>{message}</p>
+#     </>
+#   );
+# }
+
+
+# export default ColorGamePage;
