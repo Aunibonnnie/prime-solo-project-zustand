@@ -102,6 +102,39 @@ router.post('/disable', (req, res) => {
     });
 });
 ////////
+///////////////////
+//LEADERBOARD
+// Route to fetch current user's score
+router.get('/score/current-user', async (req, res) => {
+  const userId = req.user.id;  // Assuming user is authenticated and `user.id` is available
+  const query = `
+    SELECT 
+      COALESCE(u.username, g.username) AS username,
+      SUM(gs.points) AS color_score
+    FROM 
+      game_score gs
+    LEFT JOIN 
+      "user" u ON gs.user_id = u.id
+    LEFT JOIN 
+      "guest_user" g ON gs.guest_user_id = g.id
+    WHERE 
+      gs.game_type = 'color'  
+      AND gs.score_visible = TRUE
+      AND gs.user_id = $1  -- Filter by current user
+    GROUP BY 
+      COALESCE(u.username, g.username)
+  `;
+  
+  try {
+    const result = await pool.query(query, [userId]);
+    res.json(result.rows[0]);  // Return the user's score
+  } catch (error) {
+    console.error('Error fetching user score:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+///////////////////
+
 
 // Handles the logic for logging in a user. When this route receives
 // a request, it runs a middleware function that leverages the Passport

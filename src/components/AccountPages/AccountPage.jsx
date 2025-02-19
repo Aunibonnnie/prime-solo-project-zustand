@@ -8,16 +8,17 @@ function AccountPage () {
   const [newUsername, setNewUsername] = useState('');
   const [message, setMessage] = useState('');
   const [showInput, setShowInput] = useState(false);
-  const user = useStore((state) => state.user);
   const error = useStore((state) => state.error);
   const fetchUser = useStore((state) => state.fetchUser);
   const disableUserAccount = useStore((state) => state.disableUserAccount);
+  const user = useStore((state) => state.user);
   const navigate = useNavigate();
   const logOut = useStore((state) => state.logOut);  // Assuming your store has a logOut method
 
   useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
+    fetchUser()
+    console.log('user id is ', user.id);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -30,14 +31,14 @@ function AccountPage () {
   
   const handleDisableAccount = async () => {
     try {
-      const userId = localStorage.getItem('userId');  // Retrieve userId from localStorage
-  
-      if (!userId) {
+      //const userId = localStorage.getItem('userId');  // Retrieve userId from localStorage
+      console.log( 'user ID is', user.id)
+      if (!user.id) {
         throw new Error('User ID is missing. Please log in first.');
       }
   
       // Proceed with disabling the account if userId is valid
-      await axios.post('/api/user/disable', { userId });
+      await axios.post('/api/user/disable', { userId: user.id });
   
       navigate('/login');  // Redirect to login after account is disabled
     } catch (err) {
