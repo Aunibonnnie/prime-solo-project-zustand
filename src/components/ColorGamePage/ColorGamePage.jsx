@@ -1,68 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import useStore from '../../zustand/store';
 import { XCircle } from 'phosphor-react'; // Importing the XCircle icon
 import './ColorGamePage.css';
-import useStore from '../../zustand/store';
 
 function ColorGamePage() {
-  // Color game state
-  const [timeLeft, setTimeLeft] = useState(1130); // 2 minutes = 120 seconds
+  const user = useStore((state) => state.user);
+  const [timeLeft, setTimeLeft] = useState(120); // 2 minutes = 120 seconds
   const [level, setLevel] = useState(1);
   const [score, setScore] = useState(0);
   const [selectedColor, setSelectedColor] = useState('');
   const [gameOver, setGameOver] = useState(false);
   const [message, setMessage] = useState('');
-  const [mistakenColor, setMistakenColor] = useState(null); // Store mistaken color
-  const [showModal, setShowModal] = useState(false); // Show or hide the pop-up modal
-  const [showInstructions, setShowInstructions] = useState(false); // Show tutorial instructions
-  const user = useStore((state) => state.user);
-  
+  const [mistakenColor, setMistakenColor] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
 
-
-  // Leaderboard state
- 
-
-
-  // Colors
   const baseColors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan', 'brown', 'gray'];
 
-  // Fetch leaderboard data
-  useEffect(() => {
-    const fetchScores = async () => {
-      try {
-        // Fetch the current user's score
-        const userScoreResponse = await axios.get('/api/score/current-user');  // Custom endpoint to fetch user score
-        setUserScore(userScoreResponse.data.color_score);
-
-        // Fetch the top 5 leaderboard scores
-        const topFiveResponse = await axios.get('/api/score/top-five');  // Custom endpoint to fetch top 5 scores
-        setTopFive(topFiveResponse.data);
-      } catch (error) {
-        console.error('Error fetching scores:', error);
-      }
-    };
-
-    fetchScores();
-  }, []);
-
-  // Color game logic
   const calculateBlocks = (level) => {
-    let blockCount = 3; // Default to 3 blocks for levels 1-5
-    if (level >= 6 && level <= 10) blockCount = 5;
-    else if (level >= 11 && level <= 15) blockCount = 8;
-    else if (level >= 16 && level <= 20) blockCount = 12;
-    else if (level >= 21) blockCount = 20;
-    return blockCount;
+    if (level >= 6 && level <= 10) return 5;
+    if (level >= 11 && level <= 15) return 8;
+    if (level >= 16 && level <= 20) return 12;
+    if (level >= 21) return 20;
+    return 3; // Levels 1-5 default to 3 blocks
   };
 
   const [shuffledColors, setShuffledColors] = useState([]);
-  const [targetColorCount, setTargetColorCount] = useState(0); // Track how many target color blocks there are
+  const [targetColorCount, setTargetColorCount] = useState(0);
 
   const shuffleColors = () => {
-    const blockCount = calculateBlocks(level);  // Get the number of blocks for the current level
+    const blockCount = calculateBlocks(level);
     let shuffled = [];
-    
-    // Create shuffled array by picking colors from baseColors
+
     for (let i = 0; i < blockCount; i++) {
       const randomColor = baseColors[Math.floor(Math.random() * baseColors.length)];
       shuffled.push(randomColor);
@@ -71,7 +40,7 @@ function ColorGamePage() {
     const randomColor = shuffled[Math.floor(Math.random() * shuffled.length)];
     setSelectedColor(randomColor);
 
-    const targetColorBlocks = Math.floor(Math.random() * 3) + 1; // Random number between 1 and 3 blocks of target color
+    const targetColorBlocks = Math.floor(Math.random() * 3) + 1;
     setTargetColorCount(targetColorBlocks);
 
     while (shuffled.filter(color => color === randomColor).length < targetColorBlocks) {
@@ -79,19 +48,12 @@ function ColorGamePage() {
       shuffled[randomIndex] = randomColor;
     }
 
-    shuffled = shuffled.sort(() => Math.random() - 0.5);
-    
-    shuffled = shuffled.map(color => ({
-      color,
-      clicked: false,
-    }));
-
+    shuffled = shuffled.sort(() => Math.random() - 0.5).map(color => ({ color, clicked: false }));
     setShuffledColors(shuffled);
   };
 
   useEffect(() => {
     if (gameOver) return;
-
     shuffleColors();
 
     const timer = setInterval(() => {
@@ -108,63 +70,73 @@ function ColorGamePage() {
     return () => clearInterval(timer);
   }, [level, gameOver]);
 
-  const handleColorClick = async (index) => {
+  const updateScore = async (event) => {
+    const gameType = event.target.getAttribute('data-game-type'); // Extract game type from button
+  
+    try {
+      const response = await fetch('/api/leaderboard/update-score', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+          game_type: gameType, // Set game_type dynamically
+          points: 1,
+        }),
+      });
+  
+      const data = await response.json();
+      console.log('Updated Score:', data);
+    } catch (error) {
+      console.error('Error updating score:', error);
+    }
+  };
+  
+
+  const handleColorClick = (index) => {
     if (gameOver) return;
 
     const clickedBlock = shuffledColors[index];
     if (clickedBlock.color === selectedColor && !clickedBlock.clicked) {
-        const updatedColors = [...shuffledColors];
-        updatedColors[index] = { ...clickedBlock, clicked: true };
-        setShuffledColors(updatedColors);
+      const updatedColors = [...shuffledColors];
+      updatedColors[index] = { ...clickedBlock, clicked: true };
+      setShuffledColors(updatedColors);
 
-        const remainingUnclickedTargetBlocks = updatedColors.filter(
-            (block) => block.color === selectedColor && !block.clicked
-        );
+      const remainingUnclickedTargetBlocks = updatedColors.filter(
+        (block) => block.color === selectedColor && !block.clicked
+      );
 
-        if (remainingUnclickedTargetBlocks.length === 0) {
-            const newScore = score + 1;
-            setScore(newScore);
-            setLevel(level + 1);
-            setTimeLeft(timeLeft + 5);
-            setMessage('Correct! Next level...');
-            shuffleColors();
+      if (remainingUnclickedTargetBlocks.length === 0) {
+        const newScore = score + 1; // Increase by 1 point per level
+        setScore(newScore);
+        updateScore('color'); // Update backend score
 
-            // Send score update to backend
-            try {
-                await axios.post('/api/score/update-score', {
-                    userId: user?.id, // Assuming user ID is in Zustand
-                    points: 1, // Increase by 1 per level
-                });
-            } catch (error) {
-                console.error('Error updating score:', error);
-            }
-        }
+        setLevel(level + 1);
+        setTimeLeft(timeLeft + 5);
+        setMessage('Correct! Next level...');
+        shuffleColors();
+      }
     } else if (clickedBlock.color !== selectedColor) {
-        setMistakenColor(clickedBlock.color);
-        setGameOver(true);
-        setMessage('Oopsie! Wrong color. Game Over!');
-        setShowModal(true);
+      setMistakenColor(clickedBlock.color);
+      setGameOver(true);
+      setMessage('Oopsie! Wrong color. Game Over!');
+      setShowModal(true);
     }
-};
-
+  };
 
   const restartGame = () => {
-    setTimeLeft(30);
+    setTimeLeft(120);
     setLevel(1);
     setScore(0);
     setGameOver(false);
     setMessage('');
-    setShowModal(false); // Hide the modal
+    setShowModal(false);
     shuffleColors();
   };
 
-  const closeInstructions = () => {
-    setShowInstructions(false);
-  };
-
-  const openInstructions = () => {
-    setShowInstructions(true);
-  };
+  const closeInstructions = () => setShowInstructions(false);
+  const openInstructions = () => setShowInstructions(true);
 
   if (gameOver) {
     return (
@@ -197,7 +169,7 @@ function ColorGamePage() {
             <p>Example: Match The color BLUE</p>
             <img src="https://via.placeholder.com/150" alt="Game Example" />
             <button className="close-btn" onClick={closeInstructions}>
-              <XCircle size={32} /> {/* Phosphor's XCircle icon */}
+              <XCircle size={32} />
             </button>
           </div>
         </div>
@@ -206,14 +178,9 @@ function ColorGamePage() {
       <p>Time Left: {timeLeft} seconds</p>
       <p>Level: {level}</p>
       <p>Score: {score}</p>
-      <h3>Match the color: {selectedColor} <span className="instructions-icon" onClick={openInstructions}>❗</span> {/* The '!' icon */}</h3>
+      <h3>Match the color: {selectedColor} <span className="instructions-icon" onClick={openInstructions}>❗</span></h3>
       <br />
-      <span
-        className="selected-color"
-        style={{
-          '--selected-color': selectedColor, // Set the selectedColor dynamically in the CSS variable
-        }}
-      ></span>
+      <span className="selected-color" style={{ '--selected-color': selectedColor }}></span>
       <div className="color-block-container">
         {shuffledColors.map((block, index) => (
           !block.clicked && ( 
@@ -227,18 +194,6 @@ function ColorGamePage() {
         ))}
       </div>
       <p>{message}</p>
-
-      {/* Leaderboard Section */}
-      <h2>Color Game Leaderboard</h2>
-      <p>Your current score: {userScore}</p>
-      <h3>Top 5 Players:</h3>
-      <ul>
-        {topFive.map((player, index) => (
-          <li key={index}>
-            {player.username}: {player.color_score}
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }

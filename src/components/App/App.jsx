@@ -69,7 +69,6 @@ function App() {
               )
             }
           />
-          <Route path="/account" element={<AccountPage />} />
           <Route 
             exact path="/about"
             element={

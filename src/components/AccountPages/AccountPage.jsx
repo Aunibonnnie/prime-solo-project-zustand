@@ -20,6 +20,10 @@ function AccountPage () {
     console.log('user id is ', user.id);
   }, []);
 
+  const goToLoginPage = () => {
+    navigate('/');
+  };
+
   const handleLogout = async () => {
     try {
       await logOut();  // Call the logOut function from your store (this sends the logout request)
@@ -31,18 +35,15 @@ function AccountPage () {
   
   const handleDisableAccount = async () => {
     try {
-      //const userId = localStorage.getItem('userId');  // Retrieve userId from localStorage
       console.log( 'user ID is', user.id)
-      if (!user.id) {
-        throw new Error('User ID is missing. Please log in first.');
-      }
   
       // Proceed with disabling the account if userId is valid
-      await axios.post('/api/user/disable', { userId: user.id });
+      await disableUserAccount(user.id);
   
-      navigate('/login');  // Redirect to login after account is disabled
+      navigate('/');  // Redirect to login after account is disabled
+      console.log(navigate);
     } catch (err) {
-      console.error('Error disabling account:', err.message || err);
+      console.error('Error disabling account:', err);
     }
   };
 
@@ -108,7 +109,7 @@ function AccountPage () {
       <div className="account-actions">
         <button className="logout-btn" onClick={handleLogout}>Log Out</button>
         {error && <p className="error-message">{error}</p>}
-        <button className="disable-btn" onClick={handleDisableAccount}>Disable Account</button>
+        <button className="disable-btn" onClick={goToLoginPage}>Disable Account</button>
       </div>
         {message && <p className="message">{message}</p>}
       </div>
@@ -117,3 +118,4 @@ function AccountPage () {
 }
 
 export default AccountPage;
+

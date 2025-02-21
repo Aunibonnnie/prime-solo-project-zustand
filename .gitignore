@@ -67,6 +67,19 @@ typings/
 # ignore package-lock as it complicates merging
 package-lock.json
 
+{
+  "userId": 1,
+  "points": 10,
+  "gameType": "color"
+}
+
+{
+  "guestUserId": 5,
+  "points": 15,
+  "gameType": "shape"
+}
+
+
 if you want to make a game that is all random
 # import useStore from '../../zustand/store'
 # import { useState, useEffect } from 'react';
