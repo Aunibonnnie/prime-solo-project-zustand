@@ -15,15 +15,6 @@ function AccountPage () {
   const navigate = useNavigate();
   const logOut = useStore((state) => state.logOut);  // Assuming your store has a logOut method
 
-  useEffect(() => {
-    fetchUser()
-    console.log('user id is ', user.id);
-  }, []);
-
-  const goToLoginPage = () => {
-    navigate('/');
-  };
-
   const handleLogout = async () => {
     try {
       await logOut();  // Call the logOut function from your store (this sends the logout request)
@@ -32,7 +23,7 @@ function AccountPage () {
       console.error('Error during logout:', err);
     }
   };
-  
+
   const handleDisableAccount = async () => {
     try {
       console.log( 'user ID is', user.id)
@@ -64,6 +55,11 @@ function AccountPage () {
       );
     }
   };
+
+  useEffect(() => {
+    fetchUser()
+    console.log('user id is ', user.id);
+  }, []);
 
   return (
     <div className="account-container">
@@ -109,7 +105,7 @@ function AccountPage () {
       <div className="account-actions">
         <button className="logout-btn" onClick={handleLogout}>Log Out</button>
         {error && <p className="error-message">{error}</p>}
-        <button className="disable-btn" onClick={goToLoginPage}>Disable Account</button>
+        <button className="disable-btn" onClick={handleDisableAccount}>Disable Account</button>
       </div>
         {message && <p className="message">{message}</p>}
       </div>

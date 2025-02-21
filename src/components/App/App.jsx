@@ -22,6 +22,7 @@ function App() {
   useEffect(() => {
     fetchUser();
   }, [fetchUser]);
+console.log('current user', user);
 
   return (
     <>

@@ -2,6 +2,7 @@ const express = require('express');
 const pool = require('../modules/pool');
 const router = express.Router();
 
+
 // Get top 5 leaderboard scores (both user and guest users)
 router.get('/', async (req, res) => {
     try {
@@ -24,7 +25,7 @@ router.get('/', async (req, res) => {
                 color_score DESC
             LIMIT 5;
         `);
-++
+
         res.status(200).json(result.rows);
     } catch (error) {
         console.error('Error fetching leaderboard:', error);
@@ -55,6 +56,9 @@ router.post('/update-score', async (req, res) => {
                 RETURNING *;
             `;
             values = [userId, game_type, points];
+            console.log(userId);
+            console.log(points);
+            console.log(game_type);
         } else if (guestUserId) {
             query = `
                 INSERT INTO game_score (guest_user_id, game_type, points)
@@ -77,3 +81,5 @@ router.post('/update-score', async (req, res) => {
 
 
 module.exports = router;
+
+

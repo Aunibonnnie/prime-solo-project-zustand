@@ -34,4 +34,8 @@ function HomePage() {
 
 export default HomePage;
 
+{/* <button data-game_type="color" onClick={updateScore}>Play Color Game</button>
+<button data-game_type="shape" onClick={updateScore}>Play Shape Game</button> */}
+
+
 

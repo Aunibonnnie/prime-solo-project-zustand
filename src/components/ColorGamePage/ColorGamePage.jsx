@@ -71,8 +71,14 @@ function ColorGamePage() {
   }, [level, gameOver]);
 
   const updateScore = async (event) => {
-    const gameType = event.target.getAttribute('data-game-type'); // Extract game type from button
-  
+    const gameType = event.target.getAttribute('game_type'); // Extract game type from button
+    console.log('game type', game_type);
+
+    if (!gameType) {
+      console.error("Game type is missing!");
+      return;
+  }
+
     try {
       const response = await fetch('/api/leaderboard/update-score', {
         method: 'POST',

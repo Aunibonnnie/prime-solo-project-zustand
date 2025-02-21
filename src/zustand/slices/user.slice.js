@@ -69,12 +69,9 @@ const createUserSlice = (set, get) => ({
       const response = await axios.post('/api/user/disable', { userId });
       
       if (response.status === 200) {
-        set((state) => ({
-          user: {
-            ...state.user,
-            status: false,  // Update status to 'disabled' in the store
-          },
-        }));
+        //set({user : {}});
+        await get().logOut();
+
         return response.data;  // Return response or data as needed
       } else {
         throw new Error('Failed to disable account');
@@ -104,3 +101,5 @@ const createUserSlice = (set, get) => ({
 
 
 export default createUserSlice;
+
+// call disableaccount to logOut set({user : {}});
