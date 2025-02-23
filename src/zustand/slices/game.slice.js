@@ -26,8 +26,10 @@ export const createGameSlice = (set) => ({
   },
 });
 
+
 export default createGameSlice;
 
+//add a variable to track wich game you picked need a function to track which game button you clicked on
 
 
 

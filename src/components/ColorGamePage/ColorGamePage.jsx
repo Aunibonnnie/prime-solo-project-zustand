@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import useStore from '../../zustand/store';
 import { XCircle } from 'phosphor-react'; // Importing the XCircle icon
+import { useNavigate } from 'react-router-dom';
 import './ColorGamePage.css';
 
 function ColorGamePage() {
@@ -14,7 +16,10 @@ function ColorGamePage() {
   const [mistakenColor, setMistakenColor] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
-
+  const location = useLocation();
+  const gameType = location.state?.gameType || 'color'; // Default to 'color'
+  const navigate = useNavigate();
+  
   const baseColors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan', 'brown', 'gray'];
 
   const calculateBlocks = (level) => {
@@ -51,49 +56,79 @@ function ColorGamePage() {
     shuffled = shuffled.sort(() => Math.random() - 0.5).map(color => ({ color, clicked: false }));
     setShuffledColors(shuffled);
   };
-
   useEffect(() => {
-    if (gameOver) return;
-    shuffleColors();
+    if (!user?.id) {
+        console.error("User not found. Cannot reset score.");
+        return;
+    }
+
+    // Reset leaderboard score when the game loads
+    fetch('/api/leaderboard/reset-score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id, game_type: gameType }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log("Score reset successful on game start");
+            setScore(0); // Reset local score immediately
+            setLevel(1); // Reset level as well
+        } else {
+            console.error("Failed to reset score:", data.error);
+        }
+    })
+    .catch(error => console.error("Error:", error));
+
+    shuffleColors(); // Shuffle colors at game start
 
     const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          setGameOver(true);
-          setMessage('Time is up! Game Over!');
-        }
-        return prev - 1;
-      });
+        setTimeLeft((prev) => {
+            if (prev <= 1) {
+                clearInterval(timer);
+                setGameOver(true);
+                setMessage('Time is up! Game Over!');
+            }
+            return prev - 1;
+        });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [level, gameOver]);
+}, []); // Empty dependency array ensures this runs **only once when the component mounts**
 
-  const updateScore = async (event) => {
-    const gameType = event.target.getAttribute('game_type'); // Extract game type from button
-    console.log('game type', game_type);
 
+  const updateScore = async (gameType) => {
     if (!gameType) {
-      console.error("Game type is missing!");
+      console.error('Game type is missing!');
       return;
-  }
-
+    }
+    if (!score || score <= 0) {
+      console.error('Score must be greater than 0 to be recorded.');
+      return;
+    }
+  
     try {
-      const response = await fetch('/api/leaderboard/update-score', {
+      const response = await fetch('/api/leaderboard/update-score', { 
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           user_id: user.id,
-          game_type: gameType, // Set game_type dynamically
-          points: 1,
+          game_type: gameType,
+          points: score,
         }),
       });
   
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+  
       const data = await response.json();
-      console.log('Updated Score:', data);
+      if (data.success) {
+        console.log('Score updated successfully:', data);
+        navigate('/leaderboard'); // ✅ Redirect user to leaderboard
+      } else {
+        console.error('Failed to update score:', data.error);
+      }
     } catch (error) {
       console.error('Error updating score:', error);
     }
@@ -101,45 +136,67 @@ function ColorGamePage() {
   
 
   const handleColorClick = (index) => {
-    if (gameOver) return;
-
-    const clickedBlock = shuffledColors[index];
-    if (clickedBlock.color === selectedColor && !clickedBlock.clicked) {
-      const updatedColors = [...shuffledColors];
-      updatedColors[index] = { ...clickedBlock, clicked: true };
+    if (gameOver) return; // Stop clicks after game over
+  
+    const updatedColors = [...shuffledColors];
+    const clickedBlock = updatedColors[index];
+  
+    if (clickedBlock.color === selectedColor) {
+      // ✅ Correct color clicked
+      clickedBlock.clicked = true;
       setShuffledColors(updatedColors);
-
+  
+      // Count remaining unclicked target color blocks
       const remainingUnclickedTargetBlocks = updatedColors.filter(
         (block) => block.color === selectedColor && !block.clicked
       );
-
+  
       if (remainingUnclickedTargetBlocks.length === 0) {
-        const newScore = score + 1; // Increase by 1 point per level
-        setScore(newScore);
-        updateScore('color'); // Update backend score
-
-        setLevel(level + 1);
-        setTimeLeft(timeLeft + 5);
+        setLevel((prevLevel) => prevLevel + 1);
+        setScore((prevScore) => prevScore + 1);
+        setTimeLeft((prevTime) => prevTime + 5);
         setMessage('Correct! Next level...');
         shuffleColors();
       }
-    } else if (clickedBlock.color !== selectedColor) {
+    } else {
+      // ❌ Wrong color → Game Over
       setMistakenColor(clickedBlock.color);
       setGameOver(true);
       setMessage('Oopsie! Wrong color. Game Over!');
       setShowModal(true);
     }
   };
+  
+  
 
   const restartGame = () => {
-    setTimeLeft(120);
-    setLevel(1);
-    setScore(0);
-    setGameOver(false);
-    setMessage('');
-    setShowModal(false);
-    shuffleColors();
-  };
+    if (!user?.id) {
+        console.error("User not found. Cannot reset score.");
+        return;
+    }
+
+    fetch('/api/leaderboard/reset-score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id, game_type: gameType }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log("Score reset successful");
+            setScore(0); // Reset local score
+            setTimeLeft(120);
+            setLevel(1);
+            setGameOver(false);
+            setMessage('');
+            setShowModal(false);
+            shuffleColors(); // Restart game visuals
+        } else {
+            console.error("Failed to reset score:", data.error);
+        }
+    })
+    .catch(error => console.error("Error:", error));
+};
 
   const closeInstructions = () => setShowInstructions(false);
   const openInstructions = () => setShowInstructions(true);
@@ -158,13 +215,14 @@ function ColorGamePage() {
             <p>Correct color to match:</p> 
             <span className="correct-color" style={{ backgroundColor: selectedColor }}></span>
             <br />
+            <button onClick={() => {setGameOver(true);updateScore(gameType);}}>End Game</button>
             <button onClick={restartGame}>Restart Game</button>
           </div>
         )}
       </div>
     );
   }
-
+  
   return (
     <div className="game-container">
       {showInstructions && (
@@ -180,7 +238,7 @@ function ColorGamePage() {
           </div>
         </div>
       )}
-      <h2>Color Game</h2>
+      <h2>Welcome to the {gameType} Game!</h2>
       <p>Time Left: {timeLeft} seconds</p>
       <p>Level: {level}</p>
       <p>Score: {score}</p>

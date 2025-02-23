@@ -30,7 +30,7 @@ function Nav() {
               <NavLink to="/account">Account</NavLink>
             </li>
             <li>
-              <NavLink to="/leadorboard">leaderboard</NavLink>
+              <NavLink to="/leaderboard">leaderboard</NavLink>
             </li>
           </>
           

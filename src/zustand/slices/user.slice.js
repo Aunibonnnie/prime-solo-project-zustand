@@ -1,78 +1,87 @@
 import axios from 'axios';
 
-// All requests made with axios will include credentials, which means
-// the cookie that corresponds with the session will be sent along
-// inside every request's header
+// Ensure axios includes credentials (cookies for sessions)
 axios.defaults.withCredentials = true;
 
-
-const createUserSlice = (set, get) => ({
-  user: {},
+const userSlice = (set, get) => ({
+  user: {}, // Stores user info
   authErrorMessage: '',
+  error: null,
+  scores: { color_score: 0, shape_score: 0 }, // Stores user scores
+
+  // Fetch logged-in user
   fetchUser: async () => {
-    //  Retrieves the current user's data from the /api/user endpoint.
     try {
       const { data } = await axios.get('/api/user');
       set({ user: data });
     } catch (err) {
       console.log('fetchUser error:', err);
-      set({user : {}});
+      set({ user: {} });
     }
   },
+
+  // Fetch user scores (color & shape)
+  fetchUserScores: async (userId) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/game/user-scores/${userId}`);
+      if (response.data.success) {
+        set({ scores: response.data.data });
+      }
+    } catch (error) {
+      console.error('Error fetching user scores:', error);
+      set({ error: 'Failed to fetch scores' });
+    }
+  },
+
+  // Register new user
   register: async (newUserCredentials) => {
-    // Registers a new user by sending a POST request to
-    // /api/user/register, and then attempts to log them in.
     get().setAuthErrorMessage('');
     try {
       await axios.post('/api/user/register', newUserCredentials);
-      get().logIn(newUserCredentials);
+      get().logIn(newUserCredentials); // Auto-login after registration
     } catch (err) {
       console.log('register error:', err);
       get().setAuthErrorMessage('Oops! Registration failed. That username might already be taken. Try again!');
     }
   },
+
+  // User login
   logIn: async (userCredentials) => {
-    // Logs in an existing user by sending a POST request
-    // to /api/user/login and then retrieves their data.
-    get().setAuthErrorMessage('')
+    get().setAuthErrorMessage('');
     try {
       await axios.post('/api/user/login', userCredentials);
       get().fetchUser();
     } catch (err) {
       console.log('logIn error:', err);
-      if (err.response.status === 401) {
-        // 401 is the status code sent from passport if user isn't in the database or
-        // if the username and password don't match in the database, so:
-        get().setAuthErrorMessage('Oops! Login failed. You have entered an invalid username or password. Try again!');
+      if (err.response?.status === 401) {
+        get().setAuthErrorMessage('Oops! Login failed. Invalid username or password. Try again!');
       } else {
-        // Got an error that wasn't status 401, so we'll show a more generic error:
         get().setAuthErrorMessage('Oops! Login failed. It might be our fault. Try again!');
       }
     }
   },
+
+  // Guest login
   guestLogin: async () => {
     get().setAuthErrorMessage('');
     try {
       const { data } = await axios.post('/api/user/guest');
-      set({ user: data }); // The server now sends back the logged-in guest user
+      set({ user: data }); // Store guest user info
     } catch (err) {
       console.log('guestLogin error:', err);
       get().setAuthErrorMessage('Guest login failed. Please try again.');
     }
   },
 
-// user.slice.js (Zustand Store)
-  // Function to disable user account
+  // Disable user account
   disableUserAccount: async (userId) => {
     try {
-      console.log('Disabling user with ID:', userId);  // Debug log to check if function is called
+      console.log('Disabling user with ID:', userId);
       const response = await axios.post('/api/user/disable', { userId });
-      
-      if (response.status === 200) {
-        //set({user : {}});
-        await get().logOut();
 
-        return response.data;  // Return response or data as needed
+      if (response.status === 200) {
+        await get().logOut();
+        return response.data;
       } else {
         throw new Error('Failed to disable account');
       }
@@ -83,23 +92,23 @@ const createUserSlice = (set, get) => ({
     }
   },
 
+  // User logout
   logOut: async () => {
-    // Logs out the current user by sending a POST request to
-    // /api/user/logout, and then clears their data.
     try {
       await axios.post('/api/user/logout');
-      set({user : {}});
+      set({ user: {} });
     } catch (err) {
       console.log('logOut error:', err);
     }
   },
+
+  // Set authentication error messages
   setAuthErrorMessage: (message) => {
-    // Sets an error message for authentication-related issues.
-    set({authErrorMessage : message})
+    set({ authErrorMessage: message });
   }
-})
+});
 
+export default userSlice;
 
-export default createUserSlice;
 
 // call disableaccount to logOut set({user : {}});

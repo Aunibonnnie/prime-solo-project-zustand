@@ -55,7 +55,7 @@ console.log('current user', user);
         <Route path="/" element={<HomePage />} />  {/* Correct JSX syntax */}
         <Route path="/color-game" element={<ColorGamePage />} />  {/* Correct JSX syntax */}
         <Route path="/shape-game" element={<ShapeGamePage />} />  {/* Correct JSX syntax */}
-        <Route path="/leadorboard" element={<LeaderboardPage />} />  {/* Correct JSX syntax */}
+        <Route path="/leaderboard" element={<LeaderboardPage />} />  {/* Correct JSX syntax */}
 <Route 
   path="/account"
   element={user ? <AccountPage /> : <Navigate to="/login" replace />} 
@@ -80,9 +80,6 @@ console.log('current user', user);
                   Coincidentally, great intelligence is only loosely connected to being a good programmer.
                 </p>
                 <p>
-                  What? You don’t have to be superintelligent?
-                </p>
-                <p>
                   No, you don’t. Nobody is really smart enough to program computers.
                   Fully understanding an average program requires an almost limitless capacity
                   to absorb details and an equal capacity to comprehend them all at the same time.
@@ -95,10 +92,9 @@ console.log('current user', user);
                   accept the fact that their brains aren’t equal to the task.
                   Their egos keep them from being great programmers.
                   The more you learn to compensate for your small brain, the better a programmer you’ll be.
-                  <span className="squiggle"> The more humble you are, the faster you’ll improve.</span>
                 </p>
                 <p>
-                  --From Steve McConnell's <em>Code Complete</em>.
+                  --From Aunika Lewis <em>Prime:North Cascades</em>.
                 </p>
               </>
             }

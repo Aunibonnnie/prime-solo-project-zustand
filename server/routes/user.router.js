@@ -215,4 +215,54 @@ router.post('/logout', async (req, res) => {
   }
 });
 
+// **Fetch User Scores for Account Page**
+// Fetch user scores
+router.get('/user-scores/:user_id', async (req, res) => {
+  const { user_id } = req.params;
+
+  try {
+      const query = `
+          SELECT 
+              SUM(CASE WHEN game_type = 'color' THEN points ELSE 0 END) AS color_score,
+              SUM(CASE WHEN game_type = 'shape' THEN points ELSE 0 END) AS shape_score
+          FROM game_score 
+          WHERE user_id = $1
+          GROUP BY user_id;
+      `;
+
+      const result = await pool.query(query, [user_id]);
+
+      if (result.rows.length === 0) {
+          return res.json({ success: true, data: { color_score: 0, shape_score: 0 } });
+      }
+
+      res.json({ success: true, data: result.rows[0] });
+  } catch (error) {
+      console.error('Error fetching user scores:', error);
+      res.status(500).json({ success: false, error: 'Database error' });
+  }
+});
+
+// app.delete('/api/game/delete-score/:userId/:gameType', async (req, res) => {
+//   const { userId, gameType } = req.params;
+
+//   if (!['color', 'shape'].includes(gameType)) {
+//     return res.status(400).json({ success: false, message: 'Invalid game type' });
+//   }
+
+//   try {
+//     const query = `DELETE FROM "game_score" WHERE "user_id" = $1 AND "game_type" = $2`;
+//     const result = await pool.query(query, [userId, gameType]);
+
+//     if (result.rowCount === 0) {
+//       return res.status(404).json({ success: false, message: 'No matching score found' });
+//     }
+
+//     res.json({ success: true, message: `Deleted ${gameType} score for user ${userId}` });
+//   } catch (error) {
+//     console.error('Error deleting score:', error.message);
+//     res.status(500).json({ success: false, message: 'Server error' });
+//   }
+// });
+
 module.exports = router;
