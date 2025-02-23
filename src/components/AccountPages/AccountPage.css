@@ -112,14 +112,8 @@
 }
 
 .delete-score-btn {
-  background-color: #ff4d4d;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  margin-left: 10px;
-  cursor: pointer;
-  border-radius: 5px;
-  font-size: 14px;
+  background-color: #ff4d4d !important;
+  color: white !important;
 }
 
 .delete-score-btn:hover {

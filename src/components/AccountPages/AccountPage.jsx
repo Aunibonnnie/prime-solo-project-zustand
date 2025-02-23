@@ -113,15 +113,15 @@ function AccountPage() {
   <h3>Your Scores</h3>
   <p><strong>Color Score:</strong> {colorScore}</p>
   {colorScore > 0 && (
-    <button onClick={() => deleteScore('color')} className="delete-btn">
-      Delete Color Score
+    <button onClick={() => deleteScore('color')} className="delete-score-btn">
+    Delete Color Score
     </button>
   )}
   
   <p><strong>Shape Score:</strong> {shapeScore}</p>
   {shapeScore > 0 && (
-    <button onClick={() => deleteScore('shape')} className="delete-btn">
-      Delete Shape Score
+    <button onClick={() => deleteScore('shape')} className="delete-score-btn">
+    Delete Shape Score
     </button>
   )}
 </div>
