@@ -243,26 +243,4 @@ router.get('/user-scores/:user_id', async (req, res) => {
   }
 });
 
-// app.delete('/api/game/delete-score/:userId/:gameType', async (req, res) => {
-//   const { userId, gameType } = req.params;
-
-//   if (!['color', 'shape'].includes(gameType)) {
-//     return res.status(400).json({ success: false, message: 'Invalid game type' });
-//   }
-
-//   try {
-//     const query = `DELETE FROM "game_score" WHERE "user_id" = $1 AND "game_type" = $2`;
-//     const result = await pool.query(query, [userId, gameType]);
-
-//     if (result.rowCount === 0) {
-//       return res.status(404).json({ success: false, message: 'No matching score found' });
-//     }
-
-//     res.json({ success: true, message: `Deleted ${gameType} score for user ${userId}` });
-//   } catch (error) {
-//     console.error('Error deleting score:', error.message);
-//     res.status(500).json({ success: false, message: 'Server error' });
-//   }
-// });
-
 module.exports = router;

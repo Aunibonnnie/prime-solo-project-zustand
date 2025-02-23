@@ -10,12 +10,17 @@ function AccountPage() {
   const [showInput, setShowInput] = useState(false);
   const [colorScore, setColorScore] = useState(0);
   const [shapeScore, setShapeScore] = useState(0);
+  const [deleteMessage, setDeleteMessage] = useState('');  // For delete score success/error
 
   const user = useStore((state) => state.user);
   const fetchUser = useStore((state) => state.fetchUser);
   const disableUserAccount = useStore((state) => state.disableUserAccount);
   const logOut = useStore((state) => state.logOut);
   const navigate = useNavigate();
+
+  console.log("User from Zustand:", user);
+  console.log("User Object:", user);
+  console.log("User ID:", user?.id);
 
   const fetchUserScores = async (userId) => {
     try {
@@ -29,17 +34,36 @@ function AccountPage() {
     }
   };
 
-  const deleteScore = async (type) => {
-    try {
-        const url = `http://localhost:5000/api/game/delete-score/${user.id}/${type}`;
-        console.log('Deleting score at:', url); // Debugging line
+  const deleteScore = async (userId, gameType) => {
+    console.log("Attempting to delete score...");
+    console.log("User ID:", userId);
+    console.log("Game Type:", gameType);
 
-        const response = await axios.delete(url);
-        if (response.data.success) {
-            fetchUserScores(user.id); // Refresh scores after deletion
+    try {
+      const response = await fetch(`/api/leaderboard/delete-score/${userId}/${gameType}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include"
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete score');
+      }
+
+      const data = await response.json();
+      setDeleteMessage(data.message);  // Show the success message from the API
+      if (data.message.includes("Deleted")) {
+        // If successful, update the UI to reflect the deletion
+        if (gameType === 'color') {
+          setColorScore(0);
+        } else if (gameType === 'shape') {
+          setShapeScore(0);
         }
+      }
     } catch (error) {
-        console.error('Error deleting score:', error);
+      console.error("Error deleting score:", error);
+      setDeleteMessage(`Error: ${error.message}`);  // Show the error message
     }
 };
 
@@ -53,20 +77,6 @@ function AccountPage() {
       fetchUserScores(user.id);
     }
   }, [user?.id]);
-
-  useEffect(() => {
-    if (user?.id) {
-        axios.get(`/api/leaderboard/user-scores/${user.id}`)
-            .then((response) => {
-                if (response.data.success) {
-                    setColorScore(response.data.data.color_score || 0);
-                    setShapeScore(response.data.data.shape_score || 0);
-                }
-                console.log('Fetched Scores:', response.data.data);
-            })
-            .catch((error) => console.error('Error fetching scores:', error));
-    }
-}, [user?.id]);
 
   const handleLogout = async () => {
     try {
@@ -110,21 +120,19 @@ function AccountPage() {
       </p>
 
       <div className="score-container">
-  <h3>Your Scores</h3>
-  <p><strong>Color Score:</strong> {colorScore}</p>
-  {colorScore > 0 && (
-    <button onClick={() => deleteScore('color')} className="delete-score-btn">
-    Delete Color Score
-    </button>
-  )}
-  
-  <p><strong>Shape Score:</strong> {shapeScore}</p>
-  {shapeScore > 0 && (
-    <button onClick={() => deleteScore('shape')} className="delete-score-btn">
-    Delete Shape Score
-    </button>
-  )}
-</div>
+        <h3>Your Scores</h3>
+        <p><strong>Color Score:</strong> {colorScore}</p>
+        {colorScore > 0 && (
+          <button onClick={() => user?.id && deleteScore(user.id, "color")}>Delete Color Score</button>
+        )}
+
+        <p><strong>Shape Score:</strong> {shapeScore}</p>
+        {shapeScore > 0 && (
+          <button onClick={() => user?.id && deleteScore(user.id, "shape")}>Delete Shape Score</button>
+        )}
+
+        {deleteMessage && <p className="delete-message">{deleteMessage}</p>}  {/* Display delete result */}
+      </div>
 
       <div className="change-username-container">
         {!showInput ? (
