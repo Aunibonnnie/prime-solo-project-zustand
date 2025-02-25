@@ -112,6 +112,45 @@
   height: 120px;
 }
 
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: black; /* Ensure text is visible */
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  z-index: 1000;
+}
+
+/* === Shape Display Fix === */
+.mistaken-shape, .correct-shape {
+  display: inline-block;
+  width: 100px;
+  height: 100px;
+  margin-left: 10px;
+}
+
+/* Example for specific shapes */
+.shape-circle {
+  border-radius: 50%;
+  background-color: white;
+}
+
+.shape-triangle {
+  width: 0;
+  height: 0;
+  border-left: 30px solid transparent;
+  border-right: 30px solid transparent;
+  border-bottom: 60px solid white;
+}
+
+.shape-square {
+  background-color: white;
+}
+
+
 /* === Shape Styles === */
 
 /* Circle */

@@ -7,7 +7,7 @@ import './ColorGamePage.css';
 
 function ColorGamePage() {
   const user = useStore((state) => state.user);
-  const [timeLeft, setTimeLeft] = useState(120); // 2 minutes = 120 seconds
+  const [timeLeft, setTimeLeft] = useState(3000); // 2 minutes = 120 seconds
   const [level, setLevel] = useState(1);
   const [score, setScore] = useState(0);
   const [selectedColor, setSelectedColor] = useState('');
@@ -20,7 +20,7 @@ function ColorGamePage() {
   const gameType = location.state?.gameType || 'color'; // Default to 'color'
   const navigate = useNavigate();
   
-  const baseColors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan', 'brown', 'gray'];
+  const baseColors = ['RED', 'BLUE', 'GREEN', 'YELLOW', 'PURPLE', 'ORANGE', 'PINK', 'CYAN', 'BROWN', 'GRAY'];
 
   const calculateBlocks = (level) => {
     if (level >= 6 && level <= 10) return 5;
@@ -239,7 +239,7 @@ function ColorGamePage() {
         </div>
       )}
       <h2>Welcome to the {gameType} Game!</h2>
-      <p>Time Left: {timeLeft} seconds</p>
+      <h2 className={`timer-container ${timeLeft <= 10 ? 'low-time' : ''}`}>{timeLeft}</h2>
       <p>Level: {level}</p>
       <p>Score: {score}</p>
       <h3>Match the color: {selectedColor} <span className="instructions-icon" onClick={openInstructions}>❗</span></h3>

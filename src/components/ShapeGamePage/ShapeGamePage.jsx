@@ -105,28 +105,36 @@ function ShapeGamePage() {
 
   const handleShapeClick = (index) => {
     if (gameOver) return;
-
+  
     const updatedShapes = [...shuffledShapes];
     const clickedBlock = updatedShapes[index];
-
+  
     if (clickedBlock.shape === selectedShape) {
+      // ✅ Correct shape clicked
       clickedBlock.clicked = true;
       setShuffledShapes(updatedShapes);
-
-      if (updatedShapes.every(block => block.clicked || block.shape !== selectedShape)) {
-        setLevel(prev => prev + 1);
-        setScore(prev => prev + 1);
-        setTimeLeft(prev => prev + 5);
+  
+      // Count remaining unclicked target shape blocks
+      const remainingUnclickedTargetBlocks = updatedShapes.filter(
+        (block) => block.shape === selectedShape && !block.clicked
+      );
+  
+      if (remainingUnclickedTargetBlocks.length === 0) {
+        setLevel((prevLevel) => prevLevel + 1);
+        setScore((prevScore) => prevScore + 1);
+        setTimeLeft((prevTime) => prevTime + 5);
         setMessage('Correct! Next level...');
         shuffleShapes();
       }
     } else {
-      setMistakenShape(clickedBlock.shape);
+      // ❌ Wrong shape → Game Over
+      setMistakenShape(clickedBlock.shape); // Store the incorrect shape
       setGameOver(true);
-      setMessage('Oops! Wrong shape. Game Over!');
+      setMessage('Oopsie! Wrong shape. Game Over!');
       setShowModal(true);
     }
   };
+  
 
   const restartGame = () => {
     fetch('/api/leaderboard/reset-score', {
@@ -149,6 +157,35 @@ function ShapeGamePage() {
     .catch(error => console.error("Error:", error));
   };
 
+  if (gameOver) {
+    return (
+      <div className="game-over-container">
+        <h2>Game Over</h2>
+        <p>{message}</p>
+        <p>Your final score: {score}</p>
+        {showModal && (
+          <div className="modal">
+            <h3>Oops! Try Again!</h3>
+            <p>Incorrect shape clicked:</p>  
+            <div className={`mistaken-shape ${mistakenShape?.toLowerCase().replace(/\s+/g, '-')}`}></div>
+            <p>Correct shape to match:</p> 
+            <div className={`correct-shape ${selectedShape ? selectedShape.toLowerCase().replace(/\s+/g, '-') : ''}`}></div>
+            <br />
+            <button onClick={() => { setGameOver(true); updateScore(gameType); }}>
+              End Game
+            </button>
+            <button onClick={restartGame}>
+              Restart Game
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+  console.log("Selected Shape:", selectedShape);
+  
+  
+
   return (
     <div className="game-container">
       <h2>Welcome to the Shape Game!</h2>
@@ -156,6 +193,8 @@ function ShapeGamePage() {
       <p>Level: {level}</p>
       <p>Score: {score}</p>
       <h3>Match the shape: {selectedShape}</h3>
+      <div className={`selected-shape ${selectedShape}`}></div>
+
       <div className="shape-block-container">
         {shuffledShapes.map((block, index) => (
           !block.clicked && (

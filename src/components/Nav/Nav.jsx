@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import useStore from '../../zustand/store';
-
+import './Nav.css'; // Ensure to import the CSS file
 
 function Nav() {
   const user = useStore((store) => store.user);

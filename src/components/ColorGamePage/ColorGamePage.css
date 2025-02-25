@@ -14,11 +14,36 @@
   border-radius: 12px;
 }
 
+/* ColorGamePage.css */
+
 .selected-color {
-  border: 4px solid black;  /* Black border */
-  background-color: var(--selected-color);  /* Dynamically applied background color */
-  border-color: var(--selected-color);  /* Dynamically applied border color */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  font-weight: bold;
+  padding: 10px;
+  margin: 20px auto;
+  border-radius: 8px;
+  background-color: var(--selected-color, gray);
+  color: white;
+  text-transform: uppercase;
 }
+
+.timer-container {
+  top: 90px;
+  right: 20px;
+  font-size: 32px;
+  font-weight: bold;
+  color: black;
+  transition: color 0.5s ease-in-out;
+}
+
+/* Turns red when timer is 10 seconds or less */
+.timer-container.low-time {
+  color: red;
+}
+
 
 .color-block-container {
   display: flex;

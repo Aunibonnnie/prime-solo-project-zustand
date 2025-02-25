@@ -60,9 +60,11 @@ router.post('/submit', async (req, res) => {
 
     try {
         await pool.query(
-            `INSERT INTO game_score (user_id, points, game_type, score_visible) 
-             VALUES ((SELECT id FROM "user" WHERE username = $1), $2, $3, TRUE)`,
-            [username, points, game_type]
+            `INSERT INTO game_score (user_id, game_type, points, score_visible) 
+             VALUES ((SELECT id FROM "user" WHERE username = $1), $2, $3, TRUE)
+             ON CONFLICT (user_id, game_type) 
+             DO UPDATE SET points = game_score.points + EXCLUDED.points;`,
+            [username, game_type, points]
         );
 
         res.json({ success: true, message: 'Score submitted successfully' });
@@ -71,6 +73,7 @@ router.post('/submit', async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to submit score' });
     }
 });
+
 
 // **Reset Score**
 router.post('/reset-score', async (req, res) => {
@@ -120,53 +123,32 @@ router.get('/user-scores/:user_id', async (req, res) => {
     }
 });
 
-// Backend delete route
+// **Delete Score**
 router.delete("/delete-score/:user_id/:gameType", async (req, res) => {
     const { user_id, gameType } = req.params;
     console.log("DELETE request received:", req.params);
-    console.log("Received delete request for:", user_id, gameType);
 
     if (gameType !== "color" && gameType !== "shape") {
         return res.status(400).json({ error: "Invalid score type" });
     }
 
-    const client = await pool.connect(); // Get a client from the pool
     try {
-        // Start the transaction
-        await client.query("BEGIN");
-
-        // First, delete the score for the specified game type
-        const deleteRes = await client.query(
+        const deleteRes = await pool.query(
             `DELETE FROM game_score WHERE user_id = $1 AND game_type = $2`,
             [user_id, gameType]
         );
-        
+
         if (deleteRes.rowCount === 0) {
-            console.log(`No rows deleted for user ${user_id} and game type ${gameType}`);
+            console.log(`No score found for user ${user_id} and game type ${gameType}`);
             return res.status(404).json({ error: `No score found for user ${user_id} and game type ${gameType}` });
         }
 
-        // Optionally, update visibility flag if you want to "hide" the score first
-        await client.query(
-            `UPDATE game_score SET score_visible = FALSE WHERE user_id = $1 AND game_type = $2`,
-            [user_id, gameType]
-        );
-
-        // Commit the transaction
-        await client.query("COMMIT");
-
         res.json({ message: `Deleted ${gameType} score for user ${user_id}` });
     } catch (error) {
-        // If any query fails, roll back the transaction
-        await client.query("ROLLBACK");
         console.error("Error deleting score:", error);
         res.status(500).json({ error: "Failed to delete score. Database error." });
-    } finally {
-        // Release the client back to the pool
-        client.release();
     }
 });
-
 
 
 

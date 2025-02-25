@@ -14,6 +14,7 @@ import AccountPage from '../AccountPages/AccountPage';
 import ColorGamePage from '../ColorGamePage/ColorGamePage';
 import ShapeGamePage from '../ShapeGamePage/ShapeGamePage';
 import LeaderboardPage from '../LeaderboardPage/LeaderboardPage';
+import './App.css'; // Ensure to import the CSS file
 
 function App() {
   const user = useStore((state) => state.user);
@@ -27,7 +28,7 @@ console.log('current user', user);
   return (
     <>
       <header>
-        <h1>Prime Solo Project</h1>
+        <h1>HodgePodge</h1>
         <Nav />
       </header>
       <main>
@@ -74,27 +75,16 @@ console.log('current user', user);
             exact path="/about"
             element={
               <>
-                <h2>About Page</h2>
                 <p>
-                  Intelligence doesn’t seem like an aspect of personal character, and it isn’t.
-                  Coincidentally, great intelligence is only loosely connected to being a good programmer.
-                </p>
-                <p>
-                  No, you don’t. Nobody is really smart enough to program computers.
-                  Fully understanding an average program requires an almost limitless capacity
-                  to absorb details and an equal capacity to comprehend them all at the same time.
-                  The way you focus your intelligence is more important than how much intelligence you have…
-                </p>
-                <p>
-                  …most of programming is an attempt to compensate for the strictly limited size of our skulls.
-                  The people who are the best programmers are the people who realize how small their brains are.
-                  They are humble. The people who are the worst at programming are the people who refuse to
-                  accept the fact that their brains aren’t equal to the task.
-                  Their egos keep them from being great programmers.
-                  The more you learn to compensate for your small brain, the better a programmer you’ll be.
+                Learn and compete! Find and match the colors and shapes as fast as you can before time runs out. 
+                The more you progress the harder it gets, join with a friend and compete online to obtain the highest score on the leaderboard. 
+                Teaching kids from ages 3-6 to develop their creative minds to learn colors and shapes.
                 </p>
                 <p>
                   --From Aunika Lewis <em>Prime:North Cascades</em>.
+                </p>
+                <p>
+                  Made with Node, React, API, SQL and ChatGPT
                 </p>
               </>
             }
