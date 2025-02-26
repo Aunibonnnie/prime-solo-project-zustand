@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useStore from '../../zustand/store';
-import { XCircle } from 'phosphor-react';
 import './ShapeGamePage.css';
 
 function ShapeGamePage() {
   const user = useStore((state) => state.user);
-  const [timeLeft, setTimeLeft] = useState(120);
+  const [timeLeft, setTimeLeft] = useState(30);
   const [level, setLevel] = useState(1);
   const [score, setScore] = useState(0);
   const [selectedShape, setSelectedShape] = useState('');
@@ -14,7 +13,6 @@ function ShapeGamePage() {
   const [message, setMessage] = useState('');
   const [mistakenShape, setMistakenShape] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [showInstructions, setShowInstructions] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const gameType = location.state?.gameType || 'shape';
@@ -39,15 +37,12 @@ function ShapeGamePage() {
   const shuffleShapes = () => {
     const blockCount = calculateBlocks(level);
     let shuffled = [];
-
     for (let i = 0; i < blockCount; i++) {
       const randomShape = shapeList[Math.floor(Math.random() * shapeList.length)];
       shuffled.push(randomShape);
     }
-
     const randomShape = shuffled[Math.floor(Math.random() * shuffled.length)];
     setSelectedShape(randomShape);
-
     shuffled = shuffled.sort(() => Math.random() - 0.5).map(shape => ({ shape, clicked: false }));
     setShuffledShapes(shuffled);
   };
@@ -68,9 +63,7 @@ function ShapeGamePage() {
       }
     })
     .catch(error => console.error("Error:", error));
-
     shuffleShapes();
-
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -81,20 +74,17 @@ function ShapeGamePage() {
         return prev - 1;
       });
     }, 1000);
-
     return () => clearInterval(timer);
   }, []);
 
   const updateScore = async () => {
     if (!score || score <= 0) return;
-
     try {
       const response = await fetch('/api/leaderboard/update-score', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: user.id, game_type: gameType, points: score }),
       });
-
       if (response.ok) {
         navigate('/leaderboard');
       }
@@ -105,20 +95,16 @@ function ShapeGamePage() {
 
   const handleShapeClick = (index) => {
     if (gameOver) return;
-  
     const updatedShapes = [...shuffledShapes];
     const clickedBlock = updatedShapes[index];
-  
     if (clickedBlock.shape === selectedShape) {
       // ✅ Correct shape clicked
       clickedBlock.clicked = true;
       setShuffledShapes(updatedShapes);
-  
       // Count remaining unclicked target shape blocks
       const remainingUnclickedTargetBlocks = updatedShapes.filter(
         (block) => block.shape === selectedShape && !block.clicked
       );
-  
       if (remainingUnclickedTargetBlocks.length === 0) {
         setLevel((prevLevel) => prevLevel + 1);
         setScore((prevScore) => prevScore + 1);
@@ -127,7 +113,7 @@ function ShapeGamePage() {
         shuffleShapes();
       }
     } else {
-      // ❌ Wrong shape → Game Over
+      // Wrong shape → Game Over
       setMistakenShape(clickedBlock.shape); // Store the incorrect shape
       setGameOver(true);
       setMessage('Oopsie! Wrong shape. Game Over!');
@@ -135,7 +121,6 @@ function ShapeGamePage() {
     }
   };
   
-
   const restartGame = () => {
     fetch('/api/leaderboard/reset-score', {
       method: 'POST',
@@ -146,7 +131,7 @@ function ShapeGamePage() {
     .then(data => {
       if (data.success) {
         setScore(0);
-        setTimeLeft(120);
+        setTimeLeft(30);
         setLevel(1);
         setGameOver(false);
         setMessage('');
@@ -154,7 +139,7 @@ function ShapeGamePage() {
         shuffleShapes();
       }
     })
-    .catch(error => console.error("Error:", error));
+    .catch(error => console.error("Restart game error:", error));
   };
 
   if (gameOver) {
@@ -184,8 +169,6 @@ function ShapeGamePage() {
   }
   console.log("Selected Shape:", selectedShape);
   
-  
-
   return (
     <div className="game-container">
       <h2>Welcome to the Shape Game!</h2>
@@ -194,7 +177,6 @@ function ShapeGamePage() {
       <p>Score: {score}</p>
       <h3>Match the shape: {selectedShape}</h3>
       <div className={`selected-shape ${selectedShape}`}></div>
-
       <div className="shape-block-container">
         {shuffledShapes.map((block, index) => (
           !block.clicked && (
@@ -206,16 +188,6 @@ function ShapeGamePage() {
           )
         ))}
       </div>
-      <p>{message}</p>
-      {showModal && (
-        <div className="modal">
-          <h3>Oops! Try Again!</h3>
-          <p>Incorrect shape clicked: {mistakenShape}</p>
-          <p>Correct shape: {selectedShape}</p>
-          <button onClick={updateScore}>End Game</button>
-          <button onClick={restartGame}>Restart Game</button>
-        </div>
-      )}
     </div>
   );
 }

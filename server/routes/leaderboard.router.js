@@ -99,26 +99,21 @@ router.get('/user-scores/:user_id', async (req, res) => {
 
 //DELETE
 // **Delete Score**
-router.delete("/delete-score/:user_id/:gameType", async (req, res) => {
-    const { user_id, gameType } = req.params;
-    console.log("DELETE request received:", req.params);
-    if (gameType !== "color" && gameType !== "shape") {
-        return res.status(400).json({ error: "Invalid score type" });
-    }
-    try {
-        const deleteRes = await pool.query(
-            `DELETE FROM game_score WHERE user_id = $1 AND game_type = $2`,
-            [user_id, gameType]
-        );
-        if (deleteRes.rowCount === 0) {
-            console.log(`No score found for user ${user_id} and game type ${gameType}`);
-            return res.status(404).json({ error: `No score found for user ${user_id} and game type ${gameType}` });
-        }
-        res.json({ message: `Deleted ${gameType} score for user ${user_id}` });
-    } catch (error) {
-        console.error("Error deleting score:", error);
-        res.status(500).json({ error: "Failed to delete score. Database error." });
-    }
+router.delete("/delete-score", (req, res) => {
+    const { user_id, gameType } = req.query;
+    const validTypes = ["color", "shape"];
+    if (!user_id || !validTypes.includes(gameType)) return res.sendStatus(400);
+    const query = 'DELETE FROM game_score WHERE user_id = $1 AND game_type = $2';
+    const values = [user_id, gameType];
+    pool.query(query, values)
+        .then(({ rowCount }) => res.sendStatus(rowCount ? 200 : 404))
+        .catch((error) => {
+            console.error("Error DELETE /delete-score:", error);
+            res.sendStatus(500);
+        });
 });
+
+
+
 
 module.exports = router;

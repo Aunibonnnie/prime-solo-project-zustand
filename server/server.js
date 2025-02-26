@@ -3,7 +3,6 @@ const express = require('express');
 
 // Instantiate an express server:
 const app = express();
-const cors = require('cors');
 
 // Use process.env.PORT if it exists, otherwise use 5001:
 const PORT = process.env.PORT || 5001;
@@ -23,11 +22,7 @@ app.use(express.static('build'));
 app.use(sessionMiddleware);
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(cors({
-  origin: "http://localhost:5173",
-  methods: ["GET", "POST", "DELETE"],
-  credentials: true
-}));
+
 
 // Apply router files:
 app.use('/api/user', userRouter);

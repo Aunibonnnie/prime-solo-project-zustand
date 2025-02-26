@@ -34,40 +34,18 @@ function AccountPage() {
     }
   };
 
-  const deleteScore = async (userId, gameType) => {
-    console.log("Attempting to delete score...");
-    console.log("User ID:", userId);
-    console.log("Game Type:", gameType);
-
-    try {
-      const response = await fetch(`/api/leaderboard/delete-score/${userId}/${gameType}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include"
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete score');
-      }
-
-      const data = await response.json();
-      setDeleteMessage(data.message);  // Show the success message from the API
-      if (data.message.includes("Deleted")) {
-        fetchUserScores(user.id); // Refresh scores from backend      
-        // If successful, update the UI to reflect the deletion
-        if (gameType === 'color') {
-          setColorScore(0);
-        } else if (gameType === 'shape') {
-          setShapeScore(0);
-        }
-      }
-    } catch (error) {
-      console.error("Error deleting score:", error);
-      setDeleteMessage(`Error: ${error.message}`);  // Show the error message
-    }
-};
-
+  function deleteScore(userId, gameType) {
+    console.log("Delete score:", userId, gameType);
+    axios.delete(`/api/leaderboard/delete-score?user_id=${userId}&gameType=${gameType}`)
+        .then((response) => {
+            console.log("Back from delete:", response.data);
+            fetchUserScores(userId); // Refresh scores after deletion
+        })
+        .catch((err) => {
+            console.error(err);
+            alert("Error deleting score");
+        });
+}
 
   useEffect(() => {
     fetchUser(); // Fetch user details
@@ -120,7 +98,6 @@ function AccountPage() {
       </p>
 
       <div className="score-container">
-  <h3 className="score-title">Your Scores</h3>  {/* Centered title */}
   <div className="score-actions">
     {colorScore > 0 && (
       <button onClick={() => user?.id && deleteScore(user.id, "color")} className="delete-score-btn">

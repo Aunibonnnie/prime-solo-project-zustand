@@ -219,7 +219,6 @@ router.post('/logout', async (req, res) => {
 // Fetch user scores
 router.get('/user-scores/:user_id', async (req, res) => {
   const { user_id } = req.params;
-
   try {
       const query = `
           SELECT 
@@ -231,11 +230,9 @@ router.get('/user-scores/:user_id', async (req, res) => {
       `;
 
       const result = await pool.query(query, [user_id]);
-
       if (result.rows.length === 0) {
           return res.json({ success: true, data: { color_score: 0, shape_score: 0 } });
       }
-
       res.json({ success: true, data: result.rows[0] });
   } catch (error) {
       console.error('Error fetching user scores:', error);

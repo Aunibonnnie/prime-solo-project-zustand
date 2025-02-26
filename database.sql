@@ -24,6 +24,14 @@ CREATE TABLE "guest_user" (
   CONSTRAINT unique_guest_username UNIQUE ("username")
 );
 
+CREATE TABLE "game_score" (
+  "id" SERIAL PRIMARY KEY,
+  "user_id" INT, 
+  "game_type" VARCHAR(20) NOT NULL CHECK (game_type IN ('color', 'shape')),
+  "points" INT NOT NULL DEFAULT 0,
+  "score_visible" BOOLEAN NOT NULL DEFAULT TRUE,  -- TRUE for active, FALSE for disabled
+  FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE
+);
 
 -------------------------------------------------------
 -- SEED DATA:

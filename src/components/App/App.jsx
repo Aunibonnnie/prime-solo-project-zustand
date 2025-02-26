@@ -88,7 +88,7 @@ console.log('current user', user);
                   --From Aunika Lewis <em>Prime:North Cascades</em>.
                 </p>
                 <p>
-                  Made with Node, React, API, SQL and ChatGPT
+                  Made with Node, React, API, SQL, CSS, Clip-path maker and ChatGPT
                 </p>
                 </div>
               </>

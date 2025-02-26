@@ -65,8 +65,6 @@
 
 .crown {
   background-color: gold; /* Gold */
-  clip-path: polygon(10% 100%, 10% 30%, 30% 70%, 
-                    50% 30%, 70% 70%, 90% 30%, 90% 100%);
 }
 
 .diamond {
@@ -124,6 +122,31 @@
   z-index: 1000;
 }
 
+/* Modal Button Container */
+.modal-buttons {
+  display: flex;
+  flex-direction: row; /* Stack buttons in a column */
+  align-items: center;
+  gap: 25px; /* Adds spacing between buttons */
+  margin-top: 20px;
+}
+
+/* Ensure buttons take up equal space */
+.modal-buttons button {
+  width: 180px; 
+  height: 50px;
+  font-size: 18px;
+  border-radius: 5px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.modal-buttons button:hover {
+  background-color: #3e8e41;
+}
+
 /* === Shape Display Fix === */
 .mistaken-shape, .correct-shape {
   display: inline-block;
@@ -171,6 +194,9 @@
   clip-path: ellipse(50% 40% at 50% 50%);
 }
 
+.crown {
+  clip-path: polygon(10% 100%, 10% 30%, 30% 70%, 50% 30%, 70% 70%, 90% 30%, 90% 100%);
+}
 
 /* trapezoid */
 .trapezoid {
