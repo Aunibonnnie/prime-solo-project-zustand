@@ -158,7 +158,7 @@ router.get('/score/current-user', async (req, res) => {
   });
 
 router.post('/guest', async (req, res) => {
-  const animals = ['panda', 'monkey', 'tiger', 'elephant', 'giraffe', 'penguin', 'koala', 'zebra'];
+  const animals = ['Panda', 'Monkey', 'Tiger', 'Elephant', 'Giraffe', 'Penguin', 'Koala', 'Zebra'];
   let guestUser = null;
 
   while (!guestUser) {

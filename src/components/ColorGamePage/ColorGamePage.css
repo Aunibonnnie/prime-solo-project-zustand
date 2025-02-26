@@ -121,6 +121,31 @@ img {
   color: #d94a1d;
 }
 
+/* Modal Button Container */
+.modal-buttons {
+  display: flex;
+  flex-direction: row; /* Stack buttons in a column */
+  align-items: center;
+  gap: 25px; /* Adds spacing between buttons */
+  margin-top: 20px;
+}
+
+/* Ensure buttons take up equal space */
+.modal-buttons button {
+  width: 180px; 
+  height: 50px;
+  font-size: 18px;
+  border-radius: 5px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.modal-buttons button:hover {
+  background-color: #3e8e41;
+}
+
 button {
   width: 180px;
   height: 50px;

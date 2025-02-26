@@ -7,6 +7,7 @@ import {
 
 import useStore from '../../zustand/store';
 import Nav from '../Nav/Nav';
+import AccessPage from '../AccessPage/AccessPage';
 import HomePage from '../HomePage/HomePage';
 import LoginPage from '../LoginPage/LoginPage';
 import RegisterPage from '../RegisterPage/RegisterPage';
@@ -39,7 +40,7 @@ console.log('current user', user);
               user.id ? (
                 <HomePage /> // Render HomePage for authenticated user.
               ) : (
-                <Navigate to="/login" replace /> // Redirect unauthenticated user.
+                <AccessPage /> // Redirect unauthenticated user.
               )
             }
           />
@@ -57,6 +58,7 @@ console.log('current user', user);
         <Route path="/color-game" element={<ColorGamePage />} />  {/* Correct JSX syntax */}
         <Route path="/shape-game" element={<ShapeGamePage />} />  {/* Correct JSX syntax */}
         <Route path="/leaderboard" element={<LeaderboardPage />} />  {/* Correct JSX syntax */}
+        <Route path="/access" element={<AccessPage />} />  {/* Correct JSX syntax */}
 <Route 
   path="/account"
   element={user ? <AccountPage /> : <Navigate to="/login" replace />} 
@@ -75,6 +77,8 @@ console.log('current user', user);
             exact path="/about"
             element={
               <>
+              <div classname="container">
+                <img src="images/vecteezy_alphabet-blocks-kids-education-toys-3d-illustrations_33535070.png"></img>
                 <p>
                 Learn and compete! Find and match the colors and shapes as fast as you can before time runs out. 
                 The more you progress the harder it gets, join with a friend and compete online to obtain the highest score on the leaderboard. 
@@ -86,6 +90,7 @@ console.log('current user', user);
                 <p>
                   Made with Node, React, API, SQL and ChatGPT
                 </p>
+                </div>
               </>
             }
           />

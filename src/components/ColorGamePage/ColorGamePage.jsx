@@ -7,7 +7,7 @@ import './ColorGamePage.css';
 
 function ColorGamePage() {
   const user = useStore((state) => state.user);
-  const [timeLeft, setTimeLeft] = useState(3000); // 2 minutes = 120 seconds
+  const [timeLeft, setTimeLeft] = useState(30); // 2 minutes = 120 seconds
   const [level, setLevel] = useState(1);
   const [score, setScore] = useState(0);
   const [selectedColor, setSelectedColor] = useState('');
@@ -15,7 +15,6 @@ function ColorGamePage() {
   const [message, setMessage] = useState('');
   const [mistakenColor, setMistakenColor] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [showInstructions, setShowInstructions] = useState(false);
   const location = useLocation();
   const gameType = location.state?.gameType || 'color'; // Default to 'color'
   const navigate = useNavigate();
@@ -32,6 +31,12 @@ function ColorGamePage() {
 
   const [shuffledColors, setShuffledColors] = useState([]);
   const [targetColorCount, setTargetColorCount] = useState(0);
+
+  useEffect(() => {
+    shuffleColors();
+    const timer = setInterval(() => { /* Timer logic */ }, 1000);
+    return () => clearInterval(timer);
+}, []);
 
   const shuffleColors = () => {
     const blockCount = calculateBlocks(level);
@@ -57,12 +62,6 @@ function ColorGamePage() {
     setShuffledColors(shuffled);
   };
   useEffect(() => {
-    if (!user?.id) {
-        console.error("User not found. Cannot reset score.");
-        return;
-    }
-
-    // Reset leaderboard score when the game loads
     fetch('/api/leaderboard/reset-score', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -97,42 +96,19 @@ function ColorGamePage() {
 }, []); // Empty dependency array ensures this runs **only once when the component mounts**
 
 
-  const updateScore = async (gameType) => {
-    if (!gameType) {
-      console.error('Game type is missing!');
-      return;
-    }
-    if (!score || score <= 0) {
-      console.error('Score must be greater than 0 to be recorded.');
-      return;
-    }
-  
-    try {
-      const response = await fetch('/api/leaderboard/update-score', { 
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+const updateScore = async (gameType) => {
+  if (!score || score <= 0) return;
+  await fetch('/api/leaderboard/update-score', { 
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
           user_id: user.id,
           game_type: gameType,
-          points: score,
-        }),
-      });
-  
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-  
-      const data = await response.json();
-      if (data.success) {
-        console.log('Score updated successfully:', data);
-        navigate('/leaderboard'); // ✅ Redirect user to leaderboard
-      } else {
-        console.error('Failed to update score:', data.error);
-      }
-    } catch (error) {
-      console.error('Error updating score:', error);
-    }
-  };
+          points: score, // 🛑 Overwrites existing score
+      }),
+  });
+};
+
   
 
   const handleColorClick = (index) => {
@@ -170,11 +146,6 @@ function ColorGamePage() {
   
 
   const restartGame = () => {
-    if (!user?.id) {
-        console.error("User not found. Cannot reset score.");
-        return;
-    }
-
     fetch('/api/leaderboard/reset-score', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -198,9 +169,6 @@ function ColorGamePage() {
     .catch(error => console.error("Error:", error));
 };
 
-  const closeInstructions = () => setShowInstructions(false);
-  const openInstructions = () => setShowInstructions(true);
-
   if (gameOver) {
     return (
       <div className="game-over-container">
@@ -215,34 +183,27 @@ function ColorGamePage() {
             <p>Correct color to match:</p> 
             <span className="correct-color" style={{ backgroundColor: selectedColor }}></span>
             <br />
-            <button onClick={() => {setGameOver(true);updateScore(gameType);}}>End Game</button>
-            <button onClick={restartGame}>Restart Game</button>
+            <div className="modal-buttons">
+              <button onClick={restartGame}>Restart</button>
+              <button onClick={async () => {
+                await updateScore(gameType);
+                navigate('/leaderboard'); // Redirects user to leaderboard after ending game
+            }}>End Game</button>
+            </div>
           </div>
         )}
       </div>
     );
   }
   
+  
   return (
     <div className="game-container">
-      {showInstructions && (
-        <div className="instructions-modal">
-          <div className="modal-content">
-            <h3>How to Play</h3>
-            <p>Match the color to the given text.</p> 
-            <p>Example: Match The color BLUE</p>
-            <img src="https://via.placeholder.com/150" alt="Game Example" />
-            <button className="close-btn" onClick={closeInstructions}>
-              <XCircle size={32} />
-            </button>
-          </div>
-        </div>
-      )}
       <h2>Welcome to the {gameType} Game!</h2>
       <h2 className={`timer-container ${timeLeft <= 10 ? 'low-time' : ''}`}>{timeLeft}</h2>
       <p>Level: {level}</p>
       <p>Score: {score}</p>
-      <h3>Match the color: {selectedColor} <span className="instructions-icon" onClick={openInstructions}>❗</span></h3>
+      <h3>Match the color: {selectedColor}</h3>
       <br />
       <span className="selected-color" style={{ '--selected-color': selectedColor }}></span>
       <div className="color-block-container">

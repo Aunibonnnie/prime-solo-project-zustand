@@ -20,7 +20,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh; /* Full viewport height */
+  height: 70vh; /* Full viewport height */
   background-color: #f0f0f0; /* Light background color */
   font-family: Arial, sans-serif;
 }
@@ -69,6 +69,7 @@ button {
 
 button:hover {
   background-color: #4CAF50;
+  box-shadow: 0 0 3px 1px #20c997;
 }
 
 .photo {

@@ -54,6 +54,7 @@ function AccountPage() {
       const data = await response.json();
       setDeleteMessage(data.message);  // Show the success message from the API
       if (data.message.includes("Deleted")) {
+        fetchUserScores(user.id); // Refresh scores from backend      
         // If successful, update the UI to reflect the deletion
         if (gameType === 'color') {
           setColorScore(0);
@@ -113,27 +114,35 @@ function AccountPage() {
 
   return (
     <div className="account-container">
-      <h2 className="account-header">Account Page</h2>
+    <h2 className="account-header">Account Page</h2>
       <p className="username-info">
-        Welcome <strong>Username:</strong> {user ? user.username : 'Guest'}
-        <strong> Status:</strong> {user.status ? 'Active' : 'Inactive'}
+        Welcome {user ? user.username : 'Guest'}
       </p>
 
       <div className="score-container">
-        <h3>Your Scores</h3>
-        <p><strong>Color Score:</strong> {colorScore}</p>
-        {colorScore > 0 && (
-          <button onClick={() => user?.id && deleteScore(user.id, "color")}>Delete Color Score</button>
-        )}
+  <h3 className="score-title">Your Scores</h3>  {/* Centered title */}
+  <div className="score-actions">
+    {colorScore > 0 && (
+      <button onClick={() => user?.id && deleteScore(user.id, "color")} className="delete-score-btn">
+        Delete Color Score
+      </button>
+    )}
+    {shapeScore > 0 && (
+      <button onClick={() => user?.id && deleteScore(user.id, "shape")} className="delete-score-btn">
+        Delete Shape Score
+      </button>
+    )}
+  </div>
+  <div className="score-item">
+    <p><strong>Color Score:</strong> {colorScore}</p>
+  </div>
+  <div className="score-item">
+    <p><strong>Shape Score:</strong> {shapeScore}</p>
+  </div>
+  {deleteMessage && <p className="delete-message">{deleteMessage}</p>}
+</div>
 
-        <p><strong>Shape Score:</strong> {shapeScore}</p>
-        {shapeScore > 0 && (
-          <button onClick={() => user?.id && deleteScore(user.id, "shape")}>Delete Shape Score</button>
-        )}
-
-        {deleteMessage && <p className="delete-message">{deleteMessage}</p>}  {/* Display delete result */}
-      </div>
-
+<div className="username-container"></div>
       <div className="change-username-container">
         {!showInput ? (
           <button onClick={() => setShowInput(true)} className="change-username-btn">

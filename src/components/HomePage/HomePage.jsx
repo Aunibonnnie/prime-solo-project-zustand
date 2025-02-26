@@ -26,15 +26,15 @@ const startGame = (type) => {
 
   return (
     <div className="home-container">
-      <h2 className="speech-bubble">Hi! {user.username} user_id: {user.id} what would you like to learn today?</h2>
+      <h2 className="speech-bubble">Hi! {user.username}, what would you like to learn today?</h2>
       <div className="button-container">
         <div className="game-item">
           <img src='images/Untitled (37).png' />
-          <button onClick={() => startGame('color')}>Color Game</button>
+          <button onClick={() => startGame('color')}>Colors</button>
         </div>
         <div className="game-item">
           <img src='images/Untitled (38).png' alt="Image for Shape Game" />
-          <button onClick={() => startGame('shape')}>Shape Game</button>
+          <button onClick={() => startGame('shape')}>Shapes</button>
         </div>
       </div>
     </div>
